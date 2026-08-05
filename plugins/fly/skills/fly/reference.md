@@ -68,18 +68,25 @@ information needed to fix it.
    No aliases, no `.github/` variant, no per-package copies.
 2. **Authority.** Present ⇒ sole source. CI configs and CLAUDE.md are not read,
    not merged, not used to cross-check.
-3. **Near-miss.** A file differing only in case or wording (`checks.md`,
+3. **Probe.** `git ls-files`, never `ls`/`test -f`/`[ -f ]`. macOS (APFS) and
+   Windows (NTFS) are case-insensitive by default, so a filesystem test on a repo
+   containing `CHECKS.md` answers *yes* to `checks.md` and `CHECKS.MD` as well —
+   every macOS run would report a phantom near-miss, and a warning that fires
+   always is a warning nobody reads. Git records the name as tracked, which is
+   also the name Linux CI resolves. Cross-check with `stat -f %i` (BSD) or
+   `stat -c %i` (GNU) if you need to prove two spellings are one inode.
+4. **Near-miss.** A tracked file differing only in case or wording (`checks.md`,
    `CI-CHECKS.md`) is *reported* and *not used*. Silence here converts a typo into
    an invisible downgrade to inference.
-4. **Broken section.** `Dir:` missing, or a command that cannot run, is a
+5. **Broken section.** `Dir:` missing, or a command that cannot run, is a
    **failure**. Never a skip.
-5. **Scope.** Changed paths = `git diff --name-only $(git merge-base origin/<default> HEAD)...HEAD`
+6. **Scope.** Changed paths = `git diff --name-only $(git merge-base origin/<default> HEAD)...HEAD`
    ∪ `git status --porcelain`. Globs match against repo-root-relative paths.
-6. **Concurrency.** Sections run in parallel. Within a section, parallel unless
+7. **Concurrency.** Sections run in parallel. Within a section, parallel unless
    `Serial: yes`. `Setup:` always precedes its own section's checks and never
    blocks another section.
-7. **Fix budget.** `Fix:` once, then at most 2 further attempts, then stop.
-8. **Drift.** If CI fails on something absent from `CHECKS.md`, the file is the
+8. **Fix budget.** `Fix:` once, then at most 2 further attempts, then stop.
+9. **Drift.** If CI fails on something absent from `CHECKS.md`, the file is the
    defect. Fix it in the same PR.
 
 ## Serial sections

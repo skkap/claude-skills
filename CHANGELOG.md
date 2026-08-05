@@ -1,5 +1,17 @@
 # Changelog
 
+## fly 1.0.1
+
+**Probe for `CHECKS.md` with `git ls-files`, not the filesystem.** macOS (APFS)
+and Windows (NTFS) are case-insensitive by default, so `ls checks.md` and
+`test -f CHECKS.MD` both succeed in a repo containing a correctly-named
+`CHECKS.md` — every run on those platforms reported a phantom near-miss. A
+warning that fires always is a warning nobody reads, which would have cost the
+real signal: a genuinely misnamed file silently downgrading the run to
+inference.
+
+Found on the first live run, against a repo whose `CHECKS.md` was correct.
+
 ## fly 1.0.0
 
 First release as a shared plugin. Previously a personal skill in `gpi-tools`.

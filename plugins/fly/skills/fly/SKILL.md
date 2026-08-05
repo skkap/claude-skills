@@ -65,9 +65,21 @@ Rules that make this deterministic:
 - **`CHECKS.md`, exactly.** At `git rev-parse --show-toplevel`. Case-sensitive. Not
   `.github/CHECKS.md`, not `checks.md`, not `server/CHECKS.md` — a monorepo gets
   **one** root file with a section per component.
-- A **near-miss** filename (`checks.md`, `CHECKS.MD`, `CI-CHECKS.md`) is reported as
-  a near-miss, never silently used. A typo that quietly downgrades you to inference
-  is the exact failure this design exists to prevent.
+- **Probe with git, not the filesystem:**
+
+  ```bash
+  git ls-files --full-name -- ':(top)*.md' | grep -inE '^(checks|ci[-_]?checks)\.md$'
+  ```
+
+  `ls CHECKS.md` and `test -f` answer **case-insensitively on macOS and Windows**,
+  so on a repo with a correctly-named file they report `checks.md` and `CHECKS.MD`
+  as present too. `git ls-files` returns the name as tracked, which is the only
+  spelling that matters — it is what Linux CI will look for.
+- A **near-miss** — a hit from that grep whose name is not exactly `CHECKS.md` — is
+  reported as a near-miss and never silently used. A typo that quietly downgrades
+  you to inference is the exact failure this design exists to prevent. An untracked
+  file is invisible to `git ls-files`; if the checks seem to be missing, that's the
+  first thing to check.
 - When `CHECKS.md` is present it is the **sole** authority. Workflows and CLAUDE.md
   are not consulted, not cross-checked, not merged in.
 - When it is **absent**, derive from 2 → 3 → 4, and then **offer to write
