@@ -1,6 +1,6 @@
 # Changelog
 
-## plan-it 1.0.0
+## shape-it 1.0.0
 
 **Plan a feature by asking only what is expensive to get wrong.** Planning fails
 in two directions: an agent that asks nothing builds the wrong thing

@@ -8,12 +8,12 @@ specific to a codebase lives in that codebase, not here.
 ```
 /plugin marketplace add skkap/claude-skills
 /plugin install fly@skkap-skills
-/plugin install plan-it@skkap-skills
+/plugin install shape-it@skkap-skills
 ```
 
 ## Skills
 
-### `plan-it` — think a feature through before building it
+### `shape-it` — think a feature through before building it
 
 Reads the codebase first, decides everything the repo can already answer, and
 asks you only about the decisions that are expensive to reverse. Ends with a

@@ -1,9 +1,9 @@
 ---
-name: plan-it
+name: shape-it
 description: Plan a feature by investigating the codebase first, deciding everything the repo can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
-# plan-it — decide the obvious, ask what is expensive
+# shape-it — decide the obvious, ask what is expensive
 
 Planning goes wrong in two directions. An agent that asks nothing builds the
 wrong thing confidently. An agent that asks everything makes the operator do the
