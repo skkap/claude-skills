@@ -7,7 +7,12 @@
     {
       "name": "fly",
       "source": "./plugins/fly",
-      "description": "Ship the current work as a pull request with every local check green — reads the repo's CHECKS.md, runs the checks, fixes what breaks, commits, pushes, and opens or updates the PR. Does not wait on CI."
+      "description": "Ship the current work as a pull request with every local check green \u2014 reads the repo's CHECKS.md, runs the checks, fixes what breaks, commits, pushes, and opens or updates the PR. Does not wait on CI."
+    },
+    {
+      "name": "plan-it",
+      "source": "./plugins/plan-it",
+      "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse \u2014 data models, public surfaces, vocabulary, scope, UI shape, business rules. Batched multiple-choice questions, then a written plan. Does not enter plan mode and does not implement."
     }
   ]
 }

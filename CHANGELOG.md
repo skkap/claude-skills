@@ -1,5 +1,26 @@
 # Changelog
 
+## plan-it 1.0.0
+
+**Plan a feature by asking only what is expensive to get wrong.** Planning fails
+in two directions: an agent that asks nothing builds the wrong thing
+confidently, and one that asks everything hands back the thinking it was given —
+usually including questions the repository already answers.
+
+The sorting test is reversibility rather than difficulty. A decision earns a
+question only when the repo cannot answer it *and* undoing it later is costly:
+schema, published surfaces, vocabulary that leaks into schema and UI and docs
+at once, scope boundaries, UI shape without precedent, and business rules that
+exist nowhere in the code. Everything else is decided, with the precedent cited.
+
+Questions are batched multiple-choice rather than open dialogue — up to four at
+once, recommendation marked, each option stating what happens rather than what
+it is called, and previews for anything with a shape. Two rounds is the ceiling.
+
+The plan carries a **Decided without asking** section. Deciding freely is only
+safe when the silent calls are visible, and one wrong "obvious" call otherwise
+propagates through everything built on it.
+
 ## fly 1.0.1
 
 **Probe for `CHECKS.md` with `git ls-files`, not the filesystem.** macOS (APFS)

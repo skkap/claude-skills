@@ -8,9 +8,37 @@ specific to a codebase lives in that codebase, not here.
 ```
 /plugin marketplace add skkap/claude-skills
 /plugin install fly@skkap-skills
+/plugin install plan-it@skkap-skills
 ```
 
 ## Skills
+
+### `plan-it` — think a feature through before building it
+
+Reads the codebase first, decides everything the repo can already answer, and
+asks you only about the decisions that are expensive to reverse. Ends with a
+written plan, not a conversation. It does not enter plan mode and does not
+implement.
+
+Two things it does differently:
+
+**The test is reversibility, not difficulty.** A decision earns a question when
+the repo cannot answer it *and* being wrong is costly to undo — schema and data
+model, public routes and event names, vocabulary that leaks into the UI and the
+API, scope boundaries, UI shape where there is no precedent, and business rules
+that exist nowhere in the code. A tricky algorithm behind a stable interface is
+cheap and gets decided for you; a column name in a shipped table is not. Anything
+the repo already demonstrates is a citation, not a question.
+
+**It shows its work on the silent decisions.** Letting an agent decide freely is
+only safe if the calls it made alone are visible, so the plan carries a
+*Decided without asking* section with the precedent for each. One wrong "obvious"
+call otherwise poisons everything downstream, and that list is what makes it
+cheap to catch.
+
+Questions arrive batched — up to four at once, each option stating its
+consequence rather than its name, with a recommendation marked. Two rounds at
+most; past that it is an interview.
 
 ### `fly` — ship the current work as a green PR
 
