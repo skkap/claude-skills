@@ -12,7 +12,7 @@
     {
       "name": "shape-it",
       "source": "./plugins/shape-it",
-      "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse \u2014 data models, public surfaces, vocabulary, scope, UI shape, business rules. Batched multiple-choice questions, then a written plan. Does not enter plan mode and does not implement."
+      "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse \u2014 data models, public surfaces, vocabulary, scope, UI shape, business rules. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains DOMAIN.md and docs/adr/ so those answers outlive the plan. Does not enter plan mode and does not implement."
     }
   ]
 }

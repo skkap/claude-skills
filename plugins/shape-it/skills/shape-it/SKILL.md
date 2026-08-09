@@ -1,6 +1,6 @@
 ---
 name: shape-it
-description: Plan a feature by investigating the codebase first, deciding everything the repo can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
+description: Plan a feature by investigating the codebase first, deciding everything the repo can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
 # shape-it — decide the obvious, ask what is expensive
@@ -15,6 +15,16 @@ answers.
 
 Both halves matter. The first keeps the questions few. The second keeps the
 silent decisions auditable, which is what makes deciding freely safe.
+
+And a third thing, which is what stops the same question being expensive twice:
+**an answer that will matter again outlives the plan.** Vocabulary goes to
+`DOMAIN.md`, hard-to-reverse technical choices go to `docs/adr/`. Anything left
+only in the plan has to be re-asked the next time someone touches this area.
+
+| | file |
+|---|---|
+| The procedure | **this file** |
+| `DOMAIN.md` / `DOMAIN-MAP.md` structure, ADR format | the **`domain`** skill |
 
 ## When this runs
 
@@ -37,6 +47,13 @@ and the decision is usually load-bearing.
 Read, in this order:
 
 - **The thing itself** — the task file, the issue, the sentence they typed.
+- **`DOMAIN.md`** — or `DOMAIN-MAP.md`, then the areas it points at. This is the
+  project's vocabulary, its kinds, its relationships and its invariants, and it
+  is the cheapest file in the repo to read. **A term defined here is a citation,
+  not a question.**
+- **`docs/adr/`** — root and per-area. Titles alone are often enough; read the
+  bodies of the two or three that touch this feature. An ADR that already
+  answers a fork removes it from the list.
 - **`CLAUDE.md` / `AGENTS.md`**, and any path-scoped rules (`.claude/rules/`,
   nested `CLAUDE.md`). These are normative. A plan that contradicts one is wrong
   even if it works.
@@ -46,6 +63,9 @@ Read, in this order:
 - **Prose in the code.** Comments that argue for a constraint are the ones people
   forget to grep for, and they often pre-empt the exact question you were about
   to ask.
+
+No `DOMAIN.md` and no `docs/adr/`? Note it and carry on — do not stop to propose
+writing them. That offer belongs at the end (§5), when you know what would go in.
 
 Come out of this able to say what already exists, what it constrains, and where
 the genuine forks are.
@@ -63,13 +83,16 @@ Two axes, and both must point the same way before you ask.
 
 ### Ask about these
 
+- **Vocabulary.** What a thing is, what it is called, what kinds it comes in, how
+  it relates to what already exists. Words leak into the schema, the API, the UI
+  and the operator's own head at once, and renaming later touches all four.
 - **Data model and schema.** Migrations are forward-only in most repos, and data
   written under the wrong shape outlives the decision that shaped it.
 - **Public surface.** Route paths, event names, CLI flags, published API fields.
   Once something consumes them, changing them breaks the consumer.
-- **Vocabulary.** Enum values, entity names, the words in the UI. They leak into
-  the schema, the API, the docs and the operator's own head, and renaming later
-  touches all four.
+- **Architecture and technology with lock-in.** Sync or async, one service or
+  two, which library owns a concern. Not every dependency — the ones that would
+  take a quarter to swap.
 - **Scope boundaries.** Which half of the task is in, which is deferred. Silence
   about the expensive half reads as permission.
 - **UI shape** where the repo has no precedent — one panel or two, a new page or
@@ -93,7 +116,34 @@ name in a shipped table is not.
 
 ---
 
-## 3. Ask — batched, concrete, opinionated
+## 3. Type each question by where its answer lands
+
+Two of the things you ask about will still matter long after this feature ships,
+and each has a home. Tag those questions; the tag is not decoration, it is the
+destination.
+
+| | Type | The question | Lands in |
+|---|---|---|---|
+| ◆ | **Domain** | What is this thing, what do we call it, what kinds are there, how does it relate to what exists, what is always true of it | `DOMAIN.md` |
+| ▲ | **Decision** | Architecture, data model, public surface, technology lock-in, sync vs async — and deliberate no-s | `docs/adr/` |
+| | *(untyped)* | Everything else — UI shape, ordering, scope trims inside this feature | the plan only |
+
+The tag goes in the question's `header` (`◆ Domain`, `▲ Decision`), so the
+operator can see at a glance that they are being asked about *the business* and
+not about *the build* — and vice versa. Conflating those two is what produces
+answers that sound decisive and settle nothing.
+
+**Ask ◆ before ▲.** You cannot sensibly ask how a thing should be stored before
+agreeing what the thing is, and a domain answer routinely dissolves a technical
+question that looked open. If both types are live, put the domain questions in
+the first round.
+
+An untyped question is not a lesser question — most rounds are mostly untyped.
+It only means the answer's home is the plan.
+
+---
+
+## 4. Ask — batched, concrete, opinionated
 
 Use `AskUserQuestion`. Not open dialogue: the operator picks rather than composes.
 
@@ -119,9 +169,36 @@ structure is on screen. Previews are single-select only.
 **Do not ask what you already know.** If the reading settled it, it is not a
 question — it is a line in the plan.
 
+### Then the notes turn
+
+The picker is fast and narrow: one choice per question, and the free-text
+`Other` box belongs to a single question. Anything the operator wants to say
+*across* questions — a qualifier, a correction, a "yes, but only for the express
+kind" — has nowhere to go.
+
+So after every round, before doing anything with the answers, echo what you heard
+and hand back one open turn:
+
+```
+Round 1 answered.
+
+Heard:
+  ◆ Q1 Shipment kinds → standard | express | pickup
+  ▲ Q2 order totals   → stored, not recomputed
+    Q3 scope          → partial cancellation deferred
+
+Anything to correct or add before I write the plan?
+```
+
+Three constraints on it. **Echo the answer, not the option label** — restating
+their pick in your own words is what surfaces a misread while it is still cheap.
+**Keep it to one line per question**; this is a confirmation, not a summary.
+**Ask once per round and then move**, whatever they say or do not say. A second
+"anything else?" is the interview you were avoiding.
+
 ---
 
-## 4. Write the plan
+## 5. Write the plan, then persist what outlives it
 
 A document, not a conversation. It should be enough for someone else — or a
 dispatched agent — to build from.
@@ -133,7 +210,8 @@ dispatched agent — to build from.
 <2-3 sentences, plain language: what changes and for whom.>
 
 ## Decisions
-<Each answered question, and what was chosen. One line each.>
+<Each answered question, and what was chosen. One line each. Mark the ◆ and ▲
+ones with where the answer was written.>
 
 ## Decided without asking
 <The calls made alone, with the precedent or the reason. This is the audit
@@ -153,6 +231,25 @@ list — short, but the operator must be able to catch a wrong "obvious".>
 decide freely. Keep it to the decisions that could plausibly have gone the other
 way — not every naming choice.
 
+Then place the typed answers:
+
+- **◆ Domain answers → `DOMAIN.md`.** If the file exists, write them in now,
+  following the `domain` skill's format. If it does not, list the terms the
+  session settled and offer to start the file — **at the end, having done the
+  work, never as a precondition for starting it.**
+- **▲ Decision answers → `docs/adr/`,** for the ones that clear the three-part
+  gate: hard to reverse, surprising without context, a real trade-off. A
+  decision that fails the gate stays in the plan and that is correct. The
+  deliberate no-s from *Out of scope* are candidates too — the surprising and
+  the recurring ones, not routine trimming.
+
+Load the **`domain`** skill for either. Do not improvise the formats — a
+`DOMAIN.md` written to a private shape is worse than none, because the next
+session will read it and copy it.
+
+If the answers contradicted something already in `DOMAIN.md` or an existing ADR,
+that is not a silent overwrite: say what changed, and supersede rather than edit.
+
 ---
 
 ## Guardrails
@@ -162,7 +259,11 @@ way — not every naming choice.
   deliverable.
 - **Do not ask more than two rounds.** If the picture is still unclear, say what
   is unclear and why, rather than continuing to interrogate.
-- **Never ask what the repo answers.** If you find yourself asking about a
-  convention, you have not read enough.
+- **Never ask what the repo answers** — including `DOMAIN.md` and the ADRs. If
+  you find yourself asking about a convention or a term, you have not read
+  enough.
 - **Cite the repo when you decide.** "Following `entry.status`" is checkable;
   "seemed natural" is not.
+- **Never turn planning into documentation work.** Offering to write `DOMAIN.md`
+  before the plan exists trades the thing they asked for against a thing they
+  did not.

@@ -1,5 +1,72 @@
 # Changelog
 
+## shape-it 1.1.0
+
+**Answers that outlive the plan.** Every question `shape-it` asked landed in one
+plan document, which meant the expensive ones got asked again the next time
+anyone touched the area — and answered differently, because nothing recorded the
+first answer. Across several repos that is how one project ends up with three
+words for the same thing.
+
+Questions are now typed by destination. **◆ Domain** — what a thing is, what it
+is called, what kinds it comes in, how it relates, what is always true of it —
+goes to `DOMAIN.md`. **▲ Decision** — architecture, data model, public surface,
+technology lock-in, sync vs async, and deliberate no-s — goes to `docs/adr/`.
+Everything else stays in the plan, which is correct for it. The tag is visible in
+the question header, so it is clear at the moment of asking whether the subject
+is the business or the build.
+
+Domain questions are asked first: choosing how to store a thing before agreeing
+what the thing is produces a confident answer to the wrong question, and a domain
+answer routinely dissolves a technical fork that looked open.
+
+`DOMAIN.md` and `docs/adr/` are now read at the *start* of investigation, ahead of
+the schema and the neighbouring feature. A term already defined is a citation,
+not a question.
+
+### New skill: `domain`
+
+The active discipline behind the ◆ tag, and invocable alone for a session with no
+feature attached. Ships `DOMAIN-FORMAT.md` and `ADR-FORMAT.md`, so the formats
+have one owner rather than being improvised per session — a `DOMAIN.md` written
+to a private shape is worse than none, because the next session copies it.
+
+The sorting rule is one line: **`DOMAIN.md` says what is true about the business;
+an ADR says why the system is built the way it is.** Domain survives a rewrite on
+another stack; a decision does not.
+
+Behaviours worth naming: it challenges a conflicting word **in the moment**
+rather than in an end-of-session summary, because by the summary the wrong word
+is in a migration. It cross-checks against code **in both directions** — code
+contradicting a stated rule, and entries nothing references any more, which is
+the direction nobody checks. It never changes an existing definition silently,
+since something is already built on the old reading. And it creates files lazily,
+offering `DOMAIN.md` at the end of a session with the terms in hand, never as a
+precondition for starting the work.
+
+### The notes turn
+
+`AskUserQuestion` gives one choice per question and a free-text box scoped to a
+single question. A qualifier that spans the round — "yes, but only for the
+express kind" — had nowhere to go, and the operator either dropped it or
+derailed the round with it.
+
+Each round now ends with the answers echoed back in the operator's terms, one
+line per question, and one open turn. Echoing the *answer* rather than the option
+label is what surfaces a misread while correcting it is still free. Once per
+round, then move on.
+
+### Derived from mattpocock/skills, with changes
+
+`CONTEXT.md` → `DOMAIN.md`: "context" collides with "context window" in every
+sentence an agent writes about the file. Entries gained `_Kinds_` (a closed set
+becomes an enum, a set of API values and a set of UI labels simultaneously —
+the most expensive line in the file) and `_See_` (an entry with no references is
+either new or dead, and the entry alone will not say which). Relationships and
+cross-entity rules became documented sections rather than an undocumented habit
+of the upstream author's own file. Scope no longer has a separate home: a
+deliberate no is a decision, and lands in `docs/adr/`.
+
 ## shape-it 1.0.0
 
 **Plan a feature by asking only what is expensive to get wrong.** Planning fails

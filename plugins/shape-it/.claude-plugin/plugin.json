@@ -1,7 +1,7 @@
 {
   "name": "shape-it",
-  "version": "1.0.0",
-  "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse \u2014 data models, public surfaces, vocabulary, scope, UI shape, business rules. Batched multiple-choice questions, then a written plan. Does not enter plan mode and does not implement.",
+  "version": "1.1.0",
+  "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains the project's DOMAIN.md and docs/adr/ — so vocabulary and hard-to-reverse decisions outlive the plan instead of being re-asked.",
   "author": {
     "name": "skkap"
   },
@@ -13,6 +13,11 @@
     "design",
     "questions",
     "scoping",
-    "workflow"
+    "workflow",
+    "domain-modeling",
+    "ubiquitous-language",
+    "glossary",
+    "adr",
+    "architecture-decision-record"
   ]
 }
