@@ -1,7 +1,7 @@
 {
   "name": "shape-it",
-  "version": "1.1.0",
-  "description": "Plan a feature by reading the codebase first, deciding everything the repo can already answer, and asking only what is expensive to reverse. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains the project's DOMAIN.md and docs/adr/ — so vocabulary and hard-to-reverse decisions outlive the plan instead of being re-asked.",
+  "version": "1.2.0",
+  "description": "Plan a piece of work by reading the project first, deciding everything it can already answer, and asking only what is expensive to reverse. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains the project's DOMAIN.md and docs/decisions/ so vocabulary and hard-to-reverse decisions outlive the plan, and `domain-adopt`, a manual-only pass that seeds a model into a project that has none. Works on a codebase or on a project made of documents and records.",
   "author": {
     "name": "skkap"
   },
@@ -17,6 +17,7 @@
     "domain-modeling",
     "ubiquitous-language",
     "glossary",
+    "decision-record",
     "adr",
     "architecture-decision-record"
   ]

@@ -1,5 +1,202 @@
 # Changelog
 
+## shape-it 1.2.0
+
+**The domain model stops assuming source code.** 1.1.0 was written for
+codebases and said so in every load-bearing sentence: the sorting test was
+*"still true after a rewrite on another stack"*, `_See_` wanted source files,
+§3 cross-checked "against the code", and per-area models were placed "next to
+the code they describe". None of that survives contact with a project made of
+documents — a company's records, a knowledge vault, a research archive — which
+is precisely where the vocabulary problem is worst, because prose tolerates two
+words for one thing far longer than a compiler does.
+
+The test is now *"still true if the whole thing were rebuilt from scratch"*, and
+everywhere the skill said *the code* it says *the material* — whatever the
+project actually consists of. Every rule kept its teeth; the worked examples now
+come in pairs, one from a codebase and one from a company's records, sorted by
+the same test.
+
+### Getting a model out of a person: ask for a story
+
+The skill was good at *policing* a model and thin at *eliciting* one — a single
+paragraph on inventing edge cases, which is a technique for sharpening a boundary
+you already know exists, not for finding one.
+
+The primary move is now a narration: **"walk me through the last real one, start
+to finish — what came in, what you did, what came out, and what went wrong that
+time."** Three things fall out of a story that no amount of asking for
+definitions produces: the words people use *without noticing*, which are the
+settled vocabulary (a word produced in answer to "what do you call it?" is often
+invented on the spot to be helpful); the order of things, which is where
+cardinality and relationships live; and the rules, because nobody volunteers an
+invariant — they volunteer *"—except that time when…"* halfway through. The
+invented edge case still follows, but second: a real case gives you the middle,
+and you invent only the boundary the story ran past.
+
+`domain-adopt` gains the same move as the last step of its harvest. Documents
+record what a project decided to write down, which is never the rules and rarely
+the exceptions.
+
+### Rules are the load-bearing lines, not the leftovers
+
+`## Rules` was framed as the invariants left over after the per-entry ones — the
+offcuts section. It is in fact the part that changes behaviour: a definition says
+what a thing is, a rule says what you may not do with it, and a model made only
+of definitions produces work that is plausible and quietly wrong at the edges
+because nothing in it ever says no.
+
+Three requirements now attach to a rule: state what is *forbidden* rather than
+what is preferred (*"an Invoice is immutable once sent"*, not *"we try to avoid
+editing invoices"* — nothing will honour a habit); give the exception in the same
+breath, since a rule missing its exception gets discovered as a bug; and keep it
+to one line, because a rule needing a paragraph is two rules or a decision that
+wandered in.
+
+### `docs/adr/` → `docs/decisions/`
+
+One name, every project. Half the decisions worth recording are not
+architectural — a fiscal year-end, a registered office, a bank, a deliberate no —
+and a project should not have to decide which of two directories a decision goes
+in before it can write it down. `ADR-FORMAT.md` becomes `DECISION-FORMAT.md` and
+notes the ADR name once, as the codebase synonym. [MADR](https://adr.github.io/madr/)
+reached the same conclusion from the other direction at 3.0.0, renaming itself
+from *Markdown **Architectural** Decision Records* to *Markdown **Any** Decision
+Records*.
+
+The "what qualifies" list gained a second half for records projects: structural
+choices once filed, who-is-what, counterparty lock-in, accounting and tax
+treatments, instrument choices.
+
+### The gate loses a condition, and gains a required date
+
+The gate was three-part: hard to reverse, surprising without context, a real
+trade-off. **Surprising** is demoted to a priority signal. It was doing exclusion
+work the other two already do better, and it wrongly rejected exactly the
+unglamorous structural decisions that cost the most to re-litigate — *"the
+primary bank is Aozora"* is hard to reverse and had real alternatives, surprises
+nobody, and in three years the question will be *why not the obvious one* with
+nobody left who knows. Surprise now decides which record to write **first** when
+several qualify, since those are the ones people go looking for.
+
+`date:` frontmatter moves from optional to **required**. A decision is an answer
+to the rules, prices and alternatives in force when it was made, and all of those
+move; *"the exemption applies"* is a different claim in 2026 than in 2029.
+Numbering gives you order, the date gives you the world it was decided in.
+
+### New: `EXAMPLE.md`
+
+Every file gave fragments and none gave a whole model, which is the one thing an
+agent copying a format most needs. `domain` now ships a complete small project —
+a `DOMAIN.md` plus one of the decision records it links to — at about 70 lines
+covering an entire business. It is a design studio rather than a codebase on
+purpose: nothing in the format depends on having source files, and that is easier
+to see when the example has none.
+
+### Between areas: ownership *and* direction
+
+`DOMAIN-MAP.md` asked one question of a cross-area relationship — who owns the
+term. It now asks two, the second being **which side is upstream**: whose changes
+force the other to react. Ownership says where a definition lives; upstream says
+where a change gets expensive, and they are not the same question. Where neither
+side is upstream because both must move together, the map says that too — it is a
+much more expensive relationship and should be visible as one.
+
+This is the one thing taken from DDD's context mapping. The nine-pattern
+catalogue (Conformist, Anticorruption Layer, Open Host Service…) is deliberately
+left out: importing that vocabulary would violate the skill's own best rule —
+vocabulary the wider world owns does not belong in a project's model — and a
+`DOMAIN.md` for a small company should not require knowing what a Shared Kernel
+is.
+
+### Vocabulary the wider world owns
+
+The old exclusion covered general *programming* vocabulary. It now covers the
+general vocabulary of whatever field the project operates in — articles of
+incorporation, withholding tax, GAAP, GDPR, a SAFE — for the same reason: they
+are not yours, they are identical in every project that touches them, and copying
+them into four `DOMAIN.md` files produces four versions that drift. Where several
+projects need the same external vocabulary, one owns the definition and the rest
+link. What belongs to a project is only what *it* does with the term.
+
+### Non-English headwords are glossed, once
+
+`DOMAIN.md` already said the project's own words win even when they are not
+English. It did not say what that looks like. A non-English headword is now
+glossed on the entry — a short English meaning, plus a reading where the script
+does not supply one — and used bare thereafter. The gloss lives on the entry and
+nowhere else, because a second gloss is a second definition waiting to disagree.
+
+### One marker set, used in conversation
+
+Findings, questions and reports carry markers on **two independent axes**, not
+one list of five. *Where does this live* — **📖** domain, **⚖️** decision. *What
+is needed from the operator* — **✅** nothing, **⚠️** your attention, **❓** your
+answer. A line carries one of each, and the second is what does the work: `⚖️ ❓`
+is a fork waiting to be picked, `⚖️ ✅` is one already on disk. Defining axis 2 by
+the ask rather than by how finished the content feels is deliberate — "settled"
+and "a decision" sound like the same claim and are not.
+
+The 1.1.0 tags **◆** and **▲** are retired — two glyphs distinguished mainly by
+being different shapes made the operator learn a private notation, and 📖 (the
+lexicon) and ⚖️ (a choice that was weighed) say what they mean.
+
+The four moments to mark in prose and the three rules against noise moved to
+`MARKERS.md`, keeping the axis tables in `SKILL.md` where they have to be read
+every time and the usage guidance where it is loaded on demand.
+
+They are not only for reports. The skill now specifies four moments to mark in
+ordinary prose: 📖 the first time a term is used *because `DOMAIN.md` defines
+it*, ⚠️ the instant a word in play conflicts with the model, ⚖️ when a call is
+made that belongs in a decision record, and ✅ when a question turns out to be
+already answered by an entry. That is what makes it visible that a plan is being
+built out of the project's language rather than an improvised one — and it is
+checkable, since a marker is a claim about what the model says.
+
+With three rules to stop it becoming decoration: mark the term and not every
+noun, never mark something you have not actually checked, and never put ⚖️ on a
+reversible choice or ✅ on something merely mentioned. A response with fifteen
+emoji is one nobody scans.
+
+### New skill: `domain-adopt`
+
+The adoption pass moved out of `domain` into its own skill, invocable **only when
+asked for by name**. It rewrites `CLAUDE.md` and creates files across a project;
+that has to be the session the operator wanted, not a detour inside one — and a
+skill whose description matches "this project has no `DOMAIN.md`" would fire
+exactly when it is least welcome. `domain` keeps the *offer*, at the end of a
+session, with the terms in hand; `domain-adopt` is what runs if the answer is
+yes.
+
+The procedure is five steps — **explore → propose → ask → write → report** — and
+nothing is written until step four. The proposal step is what makes it safe:
+seeding a file with thirty terms nobody reviewed installs thirty definitions, and
+the wrong ones get copied by every session afterwards. The candidate model is
+shown whole first, with sources and markers, before a file is touched.
+
+Harvest runs in order of density (orientation files first — a parenthetical
+definition or a "this is not X, it is Y" correction is an entry nearly written).
+Sorting uses four buckets rather than three, the extra one being *stays where it
+is*, which carries most of the volume. An existing decisions log is converted by
+**sorting** rather than reformatting: a table accumulates rows because a row is
+cheap, so half of them are facts belonging in `DOMAIN.md`, or to-dos belonging
+where to-dos live. Vocabulary *moves* out of `CLAUDE.md` rather than being copied
+out, leaving a pointer and not a summary.
+
+It also names the failure mode. Every harvested term has an ambiguity in it, and
+resolving all of them turns the pass into a forty-question interview that
+guarantees it is never run on the next project. What is settled gets written
+without asking, one batched round covers the conflicts and the expensive gaps,
+and everything else goes to `## Open questions`.
+
+### `shape-it`
+
+Framing widened from "a feature" to "a piece of work", with the code examples
+kept as examples. The ⚖️ tag now reads *lock-in — technology, counterparty or
+legal*. Investigation reads "the nearest existing thing" rather than "the schema
+and the API surface", which in a records project is the last time something like
+this was done and what it produced.
+
 ## shape-it 1.1.0
 
 **Answers that outlive the plan.** Every question `shape-it` asked landed in one

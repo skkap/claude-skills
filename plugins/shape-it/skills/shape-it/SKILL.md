@@ -1,6 +1,6 @@
 ---
 name: shape-it
-description: Plan a feature by investigating the codebase first, deciding everything the repo can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, deciding everything it can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
 # shape-it — decide the obvious, ask what is expensive
@@ -18,19 +18,24 @@ silent decisions auditable, which is what makes deciding freely safe.
 
 And a third thing, which is what stops the same question being expensive twice:
 **an answer that will matter again outlives the plan.** Vocabulary goes to
-`DOMAIN.md`, hard-to-reverse technical choices go to `docs/adr/`. Anything left
-only in the plan has to be re-asked the next time someone touches this area.
+`DOMAIN.md`, hard-to-reverse choices go to `docs/decisions/`. Anything left only
+in the plan has to be re-asked the next time someone touches this area.
 
 | | file |
 |---|---|
 | The procedure | **this file** |
-| `DOMAIN.md` / `DOMAIN-MAP.md` structure, ADR format | the **`domain`** skill |
+| `DOMAIN.md` / `DOMAIN-MAP.md` structure, decision record format | the **`domain`** skill |
 
 ## When this runs
 
-The operator wants a feature thought through before anything is built. They are
-**not** asking for plan mode and not asking for code — this produces a written
-plan and stops.
+The operator wants a piece of work thought through before anything is built.
+They are **not** asking for plan mode and not asking for code — this produces a
+written plan and stops.
+
+Most often that piece of work is a feature in a codebase, and the examples below
+assume one. It works the same on a project made of documents and records, where
+the expensive-to-reverse decisions are filings, instruments and counterparties
+rather than schemas and routes.
 
 Not for: a one-line fix, a task whose shape is already settled, or work where the
 operator has already told you the approach. Planning something obvious is its own
@@ -40,7 +45,7 @@ kind of waste.
 
 ## 1. Investigate before asking anything
 
-**A question the codebase could have answered is a tax on the operator.** Most of
+**A question the project could have answered is a tax on the operator.** Most of
 what feels like a design question has already been decided somewhere in the repo,
 and the decision is usually load-bearing.
 
@@ -51,21 +56,25 @@ Read, in this order:
   project's vocabulary, its kinds, its relationships and its invariants, and it
   is the cheapest file in the repo to read. **A term defined here is a citation,
   not a question.**
-- **`docs/adr/`** — root and per-area. Titles alone are often enough; read the
-  bodies of the two or three that touch this feature. An ADR that already
-  answers a fork removes it from the list.
+- **`docs/decisions/`** — root and per-area. Titles alone are often enough; read
+  the bodies of the two or three that touch this work. A decision already
+  recorded removes that fork from the list.
 - **`CLAUDE.md` / `AGENTS.md`**, and any path-scoped rules (`.claude/rules/`,
   nested `CLAUDE.md`). These are normative. A plan that contradicts one is wrong
   even if it works.
-- **The schema, the API surface, the existing feature nearest to this one.** The
-  closest neighbour is the strongest signal: if the repo already does something
-  similar, the shape of the new thing is mostly decided.
-- **Prose in the code.** Comments that argue for a constraint are the ones people
-  forget to grep for, and they often pre-empt the exact question you were about
-  to ask.
+- **The nearest existing thing.** In a codebase: the schema, the API surface, the
+  feature closest to this one. In a records project: the last time something like
+  this was done, and what it produced. The closest neighbour is the strongest
+  signal — if the project already does something similar, the shape of the new
+  thing is mostly decided.
+- **Prose buried in the material.** Comments that argue for a constraint, a note
+  in a status file explaining why the obvious route was not taken. These are the
+  ones nobody thinks to grep for, and they often pre-empt the exact question you
+  were about to ask.
 
-No `DOMAIN.md` and no `docs/adr/`? Note it and carry on — do not stop to propose
-writing them. That offer belongs at the end (§5), when you know what would go in.
+No `DOMAIN.md` and no `docs/decisions/`? Note it and carry on — do not stop to
+propose writing them. That offer belongs at the end (§5), when you know what
+would go in.
 
 Come out of this able to say what already exists, what it constrains, and where
 the genuine forks are.
@@ -99,7 +108,10 @@ Two axes, and both must point the same way before you ask.
   a section. Cheap in code, expensive in habit once people learn it.
 - **Business and domain rules.** Who may see what, what counts as done, what is
   billable, what the regulator requires. These are not in the code and you cannot
-  derive them.
+  derive them. When they are unclear, the cheapest way to get them is not a
+  question but a narration: *"walk me through the last real one, start to
+  finish."* Rules arrive as the exceptions people mention in passing, never as
+  answers to "what are the rules?"
 
 ### Decide these yourself
 
@@ -124,16 +136,29 @@ destination.
 
 | | Type | The question | Lands in |
 |---|---|---|---|
-| ◆ | **Domain** | What is this thing, what do we call it, what kinds are there, how does it relate to what exists, what is always true of it | `DOMAIN.md` |
-| ▲ | **Decision** | Architecture, data model, public surface, technology lock-in, sync vs async — and deliberate no-s | `docs/adr/` |
-| | *(untyped)* | Everything else — UI shape, ordering, scope trims inside this feature | the plan only |
+| 📖 | **Domain** | What is this thing, what do we call it, what kinds are there, how does it relate to what exists, what is always true of it | `DOMAIN.md` |
+| ⚖️ | **Decision** | Architecture, data model, public surface, lock-in — technology, counterparty or legal — and deliberate no-s | `docs/decisions/` |
+| | *(untyped)* | Everything else — UI shape, ordering, scope trims inside this piece of work | the plan only |
 
-The tag goes in the question's `header` (`◆ Domain`, `▲ Decision`), so the
+The tag goes in the question's `header` (`📖 Domain`, `⚖️ Decision`), so the
 operator can see at a glance that they are being asked about *the business* and
 not about *the build* — and vice versa. Conflating those two is what produces
 answers that sound decisive and settle nothing.
 
-**Ask ◆ before ▲.** You cannot sensibly ask how a thing should be stored before
+These two are the *destination* axis of the marker set the **`domain`** skill
+defines. The other axis says what is needed from the operator — ✅ nothing,
+⚠️ your attention, ❓ your answer — and the two combine: a `⚖️ ❓` is a fork you
+are asking them to pick, a `⚖️ ✅` is one an existing record already settled. The
+same set is used in ordinary prose throughout planning, not only in the picker.
+In particular: mark
+📖 the first time you use a term because `DOMAIN.md` defines it, ✅ when a
+question turns out to be already answered by an entry or a record, and ⚠️ the
+moment a word in play conflicts with one in the model. Those markers are what
+make it visible that the plan is being built out of the project's own language
+rather than a private one. The full rules, including when *not* to mark, are in
+the `domain` skill.
+
+**Ask 📖 before ⚖️.** You cannot sensibly ask how a thing should be stored before
 agreeing what the thing is, and a domain answer routinely dissolves a technical
 question that looked open. If both types are live, put the domain questions in
 the first round.
@@ -183,9 +208,9 @@ and hand back one open turn:
 Round 1 answered.
 
 Heard:
-  ◆ Q1 Shipment kinds → standard | express | pickup
-  ▲ Q2 order totals   → stored, not recomputed
-    Q3 scope          → partial cancellation deferred
+  📖 Q1 Shipment kinds → standard | express | pickup
+  ⚖️ Q2 order totals   → stored, not recomputed
+     Q3 scope          → partial cancellation deferred
 
 Anything to correct or add before I write the plan?
 ```
@@ -210,7 +235,7 @@ dispatched agent — to build from.
 <2-3 sentences, plain language: what changes and for whom.>
 
 ## Decisions
-<Each answered question, and what was chosen. One line each. Mark the ◆ and ▲
+<Each answered question, and what was chosen. One line each. Mark the 📖 and ⚖️
 ones with where the answer was written.>
 
 ## Decided without asking
@@ -233,22 +258,28 @@ way — not every naming choice.
 
 Then place the typed answers:
 
-- **◆ Domain answers → `DOMAIN.md`.** If the file exists, write them in now,
+- **📖 Domain answers → `DOMAIN.md`.** If the file exists, write them in now,
   following the `domain` skill's format. If it does not, list the terms the
   session settled and offer to start the file — **at the end, having done the
   work, never as a precondition for starting it.**
-- **▲ Decision answers → `docs/adr/`,** for the ones that clear the three-part
-  gate: hard to reverse, surprising without context, a real trade-off. A
-  decision that fails the gate stays in the plan and that is correct. The
-  deliberate no-s from *Out of scope* are candidates too — the surprising and
-  the recurring ones, not routine trimming.
+- **⚖️ Decision answers → `docs/decisions/`,** for the ones that clear the
+  gate: hard to reverse, and a real trade-off with genuine alternatives.
+  A decision that fails the gate stays in the plan and that is correct. The
+  deliberate no-s from *Out of scope* are candidates too, on a recurrence test
+  rather than a reversibility one — the ones that have come up before, or that a
+  reasonable person would expect and be surprised to find missing. Not routine
+  trimming.
+
+Every decision record carries a `date:`. It is not optional; a decision is an
+answer to the constraints in force when it was made.
 
 Load the **`domain`** skill for either. Do not improvise the formats — a
 `DOMAIN.md` written to a private shape is worse than none, because the next
 session will read it and copy it.
 
-If the answers contradicted something already in `DOMAIN.md` or an existing ADR,
-that is not a silent overwrite: say what changed, and supersede rather than edit.
+If the answers contradicted something already in `DOMAIN.md` or an existing
+decision record, that is not a silent overwrite: say what changed, and supersede
+rather than edit.
 
 ---
 
@@ -259,10 +290,10 @@ that is not a silent overwrite: say what changed, and supersede rather than edit
   deliverable.
 - **Do not ask more than two rounds.** If the picture is still unclear, say what
   is unclear and why, rather than continuing to interrogate.
-- **Never ask what the repo answers** — including `DOMAIN.md` and the ADRs. If
-  you find yourself asking about a convention or a term, you have not read
-  enough.
-- **Cite the repo when you decide.** "Following `entry.status`" is checkable;
+- **Never ask what the project answers** — including `DOMAIN.md` and the decision
+  records. If you find yourself asking about a convention or a term, you have not
+  read enough.
+- **Cite the project when you decide.** "Following `entry.status`" is checkable;
   "seemed natural" is not.
 - **Never turn planning into documentation work.** Offering to write `DOMAIN.md`
   before the plan exists trades the thing they asked for against a thing they
