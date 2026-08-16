@@ -36,7 +36,7 @@ _See_: [0007](docs/decisions/0007-shipments-own-their-line-items.md), `src/fulfi
 | Line | For | Rule |
 |---|---|---|
 | **definition** | What it *is* | One or two sentences. Define the thing, not what it does. Required. |
-| `_Avoid_` | Words that mean this but should not be used | The rejected synonyms, comma-separated. This is the line that stops drift. |
+| `_Avoid_` | Words that mean this but should not be used | The rejected synonyms, comma-separated. This is the line that stops drift. Say where it binds — see below. |
 | `_Kinds_` | A **closed** set of variants | `A \| B \| C`. Only when the set is closed — an open-ended list is not a kind. |
 | `_Rules_` | What is always true of *this* entry | One line each. Cross-entry invariants go in `## Rules` instead. |
 | `_See_` | Where this becomes real | Decision records, source files, documents, filings, external references. Links only, no commentary. |
@@ -52,6 +52,37 @@ filing, a spreadsheet and an accounting system, and those must move together too
 new or dead, and after a few months you cannot tell which from the entry alone.
 Point it at whatever the project is actually made of — a source file, a scanned
 certificate, a decision record, a section of a business plan.
+
+### How far `_Avoid_` reaches
+
+Two different rules wear the same line, and a model that doesn't separate them is
+either ignored or over-applied. State the reach once near the top of the file,
+and mark the exceptions on the entries themselves.
+
+- **Working language — always.** Instructions, prompts, task notes, commit
+  messages, code comments, anything one person or agent writes for another. This
+  is the default and needs no marking.
+- **Published output — only where the entry says so.** UI strings, printed copy,
+  letters, anything with an audience outside the project.
+
+The distinction is that **ambiguity is contextual**. A word with four meanings in
+the project may have exactly one on the page where a reader meets it: *"Hot
+Spring Sources"* is unimprovable as a page heading even where bare "source" is
+banned in an instruction, because nothing else could be meant there. Over-apply
+the line and you end up rewriting good copy to satisfy an internal disambiguation
+problem the reader does not have.
+
+Some entries genuinely bind both, and those are usually the ones with a reason
+behind them beyond ambiguity — a word that misrepresents the subject, a spelling
+that must be consistent everywhere, a term that would read as a mistake. Mark
+them:
+
+```md
+**Sento** (銭湯 — a public bathhouse):
+A bathhouse in the price-regulated licensing class…
+_Avoid_: writing it as the antonym of onsen — **in published copy too**; plenty
+of sento run a real hot-spring source, and opposing the two misinforms the reader
+```
 
 Group entries under `###` subheadings once natural clusters emerge. A flat list
 is fine while they are all one cohesive area.

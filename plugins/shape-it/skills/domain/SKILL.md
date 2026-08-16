@@ -1,6 +1,6 @@
 ---
 name: domain
-description: Build and sharpen a project's domain model — the things the project is about, what they are called, what kinds they come in, how they relate, and what is always true of them. Works on any project, code or not: a codebase, a company's records, a knowledge vault, a research archive. Maintains DOMAIN.md (or DOMAIN-MAP.md plus per-area files in a large project) and decision records under docs/decisions/, and defines the two-axis marker set other skills use — where a thing lives (domain, decision) and what is needed from the operator (nothing, attention, an answer). Use when pinning down terminology, resolving a word two parts of a project disagree on, recording a hard-to-reverse decision, or when another skill needs the domain model maintained rather than merely read. Bulk-seeding a model into a project that has none is the separate `domain-adopt` skill, invoked only on explicit request; this skill offers it at the end of a session and never starts it.
+description: Build and sharpen a project's domain model — the things the project is about, what they are called, what kinds they come in, how they relate, and what is always true of them. Works on any project, code or not: a codebase, a company's records, a knowledge vault, a research archive. Maintains DOMAIN.md (or DOMAIN-MAP.md plus per-area files in a large project) and decision records under docs/decisions/, and defines the two-axis marker set other skills use — where a thing lives (domain, decision) and what is needed from the operator (nothing, attention, an answer). Use when pinning down terminology, resolving a word two parts of a project disagree on, recording a hard-to-reverse decision, or when another skill needs the domain model maintained rather than merely read. Bulk-seeding a model from vocabulary already scattered through a project — whether it has no DOMAIN.md yet or only a partial one — is the separate `domain-adopt` skill, invoked only on explicit request; this skill offers it at the end of a session and never starts it.
 ---
 
 # domain — one set of words, written down once
@@ -41,7 +41,7 @@ the moment it settles.
 | Decision record structure, numbering, the gate | [DECISION-FORMAT.md](DECISION-FORMAT.md) |
 | A complete worked model, both files together | [EXAMPLE.md](EXAMPLE.md) |
 | Marking in conversation, not just in reports | [MARKERS.md](MARKERS.md) |
-| Seeding a model into a project that has none | the **`domain-adopt`** skill |
+| Bulk-seeding a model, into an empty *or* partial `DOMAIN.md` | the **`domain-adopt`** skill |
 
 ---
 

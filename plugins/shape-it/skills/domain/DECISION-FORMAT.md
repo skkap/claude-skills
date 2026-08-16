@@ -62,6 +62,22 @@ window before the first filing. It also keeps the year-end clear of the quarter
 when every accountant is busy. Changing it later means amending the articles.
 ```
 
+**Recover the date; don't stamp today's.** When you write a record as the
+decision is made, the date is simply today. When you write one *afterwards* —
+lifting a choice out of prose, or adopting a model into an existing project — it
+is not, and today's date makes the record say something false about the world it
+was decided in. The history usually knows:
+
+```bash
+git log --diff-filter=A --format=%ad --date=short -1 -- <file the decision introduced>
+git log -S '<distinctive phrase>' --format='%ad %s' --date=short -1
+```
+
+Outside a repo the equivalents are the filing date, the email, the invoice, the
+meeting note. Where genuinely nothing dates it, use the earliest date you can
+defend and say in the body that it is approximate — an acknowledged estimate is
+readable, a confident wrong date is not.
+
 **The date is required, not optional.** A decision is an answer to the rules,
 prices, constraints and alternatives in force when it was made — and every one of
 those moves. Tax and legal decisions are uninterpretable without it: *"the
