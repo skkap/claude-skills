@@ -16,6 +16,7 @@ specific to a codebase lives in that codebase, not here.
 | Plugin | Skill | Does |
 |---|---|---|
 | `shape-it` | `shape-it` | Plan a piece of work; ask only what is expensive to get wrong |
+| `shape-it` | `shape-it-lite` | The same, minus the domain model — for repos that carry none |
 | `shape-it` | `domain` | Maintain the project's `DOMAIN.md` and `docs/decisions/` |
 | `shape-it` | `domain-adopt` | Seed a model into a project that has none — **manual only** |
 | `fly` | `fly` | Get the current work onto a green pull request |
@@ -101,6 +102,33 @@ most; past that it is an interview. After each round it echoes back what it hear
 in one line per question and hands you one open turn, so a qualifier that spans
 several questions has somewhere to go — the picker's free-text box belongs to a
 single question, and most corrections do not.
+
+Both versions end the same way: the plan is **written to a file and opened in
+[plannotator](https://github.com/backnotprop/plannotator)** for you to annotate,
+and the annotations are then applied. The file never lands in a directory that
+had to be created for it — an existing `docs/plans/` if there is one, otherwise
+`~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden in someone
+else's `git status` is its own small failure.
+
+---
+
+### `shape-it-lite` — the questions and the plan, nothing else
+
+Everything above minus the half that assumes a written vocabulary and a decision
+log. Same reading, same reversibility test, same framing, same batched questions.
+Gone: the 📖/⚖️ typing, `DOMAIN.md`, `docs/decisions/`.
+
+Use it when the project has neither of those files — most repos — or when it is
+**not yours to add them to**: a client's repository, someone else's open-source
+project, anything where a vocabulary file would need several other people to
+agree first. Use the full `shape-it` when they do exist, because reading them is
+most of its value.
+
+It states the trade rather than hiding it: everything settled here lives in one
+plan document, so the next person to touch the area will ask again and may answer
+differently. That is correct for a repo you do not own and wrong for one you do —
+and if you find yourself running it repeatedly on the same project, that project
+wants `shape-it` and a `DOMAIN.md`.
 
 ---
 

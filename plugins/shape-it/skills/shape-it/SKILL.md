@@ -1,6 +1,6 @@
 ---
 name: shape-it
-description: Plan a piece of work by investigating the project first, stating in plain words what the work is and what it costs to skip, then deciding everything the project can already answer and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, stating in plain words what the work is and what it costs to skip, then deciding everything the project can already answer and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan to a markdown file and opens it for annotation in plannotator. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
 # shape-it — decide the obvious, ask what is expensive
@@ -341,6 +341,39 @@ session will read it and copy it.
 If the answers contradicted something already in `DOMAIN.md` or an existing
 decision record, that is not a silent overwrite: say what changed, and supersede
 rather than edit.
+
+---
+
+---
+
+## 7. Write it to a file, and open it for annotation
+
+The plan is a document someone builds from, so it lives in a file rather than in
+scrollback.
+
+**Never create a directory inside a repository to hold it.** Resolve in order:
+an existing plans directory (`docs/plans/`, `plans/`, `.plans/`); a path the
+operator named; otherwise `~/.local/share/shape-it/<repo>/<slug>.md`. Say the
+full path, so it can be moved in one command if they want it committed. A plan
+turning up unbidden in someone else's `git status` is its own small failure.
+
+Then:
+
+```bash
+plannotator annotate <path-to-plan.md>
+```
+
+That opens the plan for mark-up and returns the annotations when they are done.
+**Act on them**: apply what each asks, and say what changed. An annotation you
+cannot act on is worth answering in your report rather than silently skipping.
+
+This step is the plan's, not the model's. `DOMAIN.md` and `docs/decisions/`
+entries were already written in §6 as the answers settled — they are the
+project's files and are never staged for annotation. If the annotations change a
+term or a fork, update those files too and say so.
+
+If `plannotator` is not installed, say the plan is written, give the path, and
+stop — do not improvise a different viewer.
 
 ---
 

@@ -12,7 +12,7 @@
     {
       "name": "shape-it",
       "source": "./plugins/shape-it",
-      "description": "Plan a piece of work by reading the project first, deciding everything it can already answer, and asking only what is expensive to reverse \u2014 data models, public surfaces, vocabulary, scope, UI shape, business rules. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains DOMAIN.md and docs/decisions/ so those answers outlive the plan, and `domain-adopt`, a manual-only pass that seeds a model into a project that has none. Works on a codebase or on a project made of documents and records. Does not enter plan mode and does not implement."
+      "description": "Plan a piece of work by reading the project first, saying in plain words what it is and what skipping it costs, then asking only what is expensive to reverse. Batched multiple-choice questions, then a markdown plan opened for annotation in plannotator. `shape-it` reads and writes DOMAIN.md and docs/decisions/ so answers outlive the plan; `shape-it-lite` is the same procedure without them, for repos that carry neither. Ships `domain` and the manual-only `domain-adopt`. Does not enter plan mode and does not implement."
     }
   ]
 }

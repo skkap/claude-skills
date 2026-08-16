@@ -1,5 +1,42 @@
 # Changelog
 
+## shape-it 1.4.0
+
+### New skill: `shape-it-lite`
+
+`shape-it` reads a project's `DOMAIN.md` and `docs/decisions/`, and writes
+answers back to them. That is most of its value — and it is dead weight on a repo
+that has neither, which is most repos, and actively wrong on a repo that is not
+yours to add them to.
+
+The lite version is the same procedure with that half removed: same reading, same
+reversibility test, same plain-words framing, same batched questions with the
+notes turn. No 📖/⚖️ typing, no domain model read or written.
+
+It states the trade instead of hiding it. Everything settled lands in one plan
+document, so the next person to touch the area will ask again and may answer
+differently — correct for a client's repository, wrong for your own. Running it
+repeatedly on the same project is the signal that the project wants `shape-it`
+and a `DOMAIN.md`.
+
+### Both versions end in a file, opened for annotation
+
+The plan was the deliverable and it lived in scrollback. It is now written to a
+markdown file and opened with `plannotator annotate`, and the annotations that
+come back are applied rather than acknowledged.
+
+Where the file goes is a rule, not a default: **never create a directory inside a
+repository to hold it.** An existing `docs/plans/` if there is one, a path the
+operator named, otherwise `~/.local/share/shape-it/<repo>/<slug>.md` with the
+path reported so it can be moved in one command. This skill is used on
+repositories that are not yours, and a plan appearing unbidden in someone else's
+`git status` is the same failure as committing your tooling to their tree.
+
+In `shape-it` the annotation pass covers the plan only. `DOMAIN.md` and
+`docs/decisions/` were already written as the answers settled; they are the
+project's files, not a draft to mark up — though an annotation that changes a
+term or a fork updates them too.
+
 ## shape-it 1.3.0
 
 **Say what the work is before asking anything about it.** Investigation gives the

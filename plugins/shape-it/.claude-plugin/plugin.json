@@ -1,7 +1,7 @@
 {
   "name": "shape-it",
-  "version": "1.3.0",
-  "description": "Plan a piece of work by reading the project first, stating in plain words what it is and what skipping it costs, then deciding everything the project can already answer and asking only what is expensive to reverse. Batched multiple-choice questions, then a written plan. Ships with `domain`, which maintains DOMAIN.md and docs/decisions/, and `domain-adopt`, a manual-only pass that seeds a model into a project that has none. Works on a codebase or on a project made of documents and records.",
+  "version": "1.4.0",
+  "description": "Plan a piece of work by reading the project first, saying in plain words what it is and what skipping it costs, then asking only what is expensive to reverse. Ends with a markdown plan opened for annotation in plannotator. `shape-it` reads and writes the project's DOMAIN.md and docs/decisions/ so answers outlive the plan; `shape-it-lite` is the same procedure without them, for repos that carry neither or cannot. Ships `domain` and the manual-only `domain-adopt` for maintaining the model itself.",
   "author": {
     "name": "skkap"
   },
