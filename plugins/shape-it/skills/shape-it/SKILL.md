@@ -1,6 +1,6 @@
 ---
 name: shape-it
-description: Plan a piece of work by investigating the project first, deciding everything it can already answer, and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, stating in plain words what the work is and what it costs to skip, then deciding everything the project can already answer and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
 # shape-it — decide the obvious, ask what is expensive
@@ -73,7 +73,7 @@ Read, in this order:
   were about to ask.
 
 No `DOMAIN.md` and no `docs/decisions/`? Note it and carry on — do not stop to
-propose writing them. That offer belongs at the end (§5), when you know what
+propose writing them. That offer belongs at the end (§6), when you know what
 would go in.
 
 Come out of this able to say what already exists, what it constrains, and where
@@ -128,7 +128,65 @@ name in a shipped table is not.
 
 ---
 
-## 3. Type each question by where its answer lands
+## 3. Say what this is, in plain words, before asking anything
+
+Investigation has given you a picture the operator cannot see. State it back
+before spending any of their attention on questions — **five short lines, no
+jargon, readable by someone who has never opened this project.**
+
+This is a checkpoint, not a preamble. If your understanding is wrong, every
+question after it is wrong too, and this is the cheapest possible moment to find
+out. It costs one screen and it is the only place a misread gets caught before
+it is baked into a plan.
+
+```
+**Shipment splitting** — an order that is too large for one van currently fails
+at checkout instead of going out in two.
+
+Why now      Support is refunding roughly one order a week over this, and each
+             one is a customer who tried to give us money and could not.
+Effect       Large orders complete. Customers see two deliveries and two
+             tracking numbers where they used to see an error.
+If we don't  The failure stays silent — nothing logs it as a lost sale, so it
+             will keep costing about that much indefinitely.
+Ahead        4 questions: what a split order is called, whether the two halves
+             can be cancelled separately, one API shape, one scope boundary.
+```
+
+| Line | What it must answer |
+|---|---|
+| **the opening sentence** | What this is, as you would say it to someone outside the project |
+| **Why now** | What is actually wrong or wanted — the pressure behind it, not a restatement of the request |
+| **Effect** | What changes, and for whom, once it is done |
+| **If we don't** | What it costs to leave it alone. Often the most useful line on the screen |
+| **Ahead** | How many questions are coming and what they are about |
+
+Four things keep it honest:
+
+- **Derive it, do not echo it.** Repeating the request back proves nothing. The
+  value is in what the reading added — *"support refunds one a week"*, *"nothing
+  logs it"*, *"the schema already has a `parent_order_id` nobody uses"*. If the
+  five lines contain nothing the operator did not already type, you have not
+  finished §1.
+- **Plain words.** No file paths, no class names, no internal shorthand. If a
+  term is genuinely load-bearing, it is a `DOMAIN.md` entry and you gloss it in
+  four words. A framing only the team can read cannot be checked by anyone else,
+  and cannot be pasted to a stakeholder.
+- **For a bug, "why" is the failure, not the defect.** Not *"the total is
+  computed twice"* but *"customers are charged twice and we refund it by hand"*.
+  A bug that costs nothing is worth saying so about — that is a real answer, and
+  it is how a plan gets cancelled before it is written.
+- **Say the number and stand by it.** "Ahead: 4 questions" tells the operator
+  what they are committing to before they start. It is also a promise: if the
+  answers open a genuinely new fork you may ask a second round (§5), but the
+  count is not a first guess to be quietly revised upward.
+
+**If nothing is unclear, say that instead** — five lines and "no questions, I can
+plan this as described". A question round is not proof of diligence.
+
+---
+
+## 4. Type each question by where its answer lands
 
 Two of the things you ask about will still matter long after this feature ships,
 and each has a home. Tag those questions; the tag is not decoration, it is the
@@ -168,7 +226,7 @@ It only means the answer's home is the plan.
 
 ---
 
-## 4. Ask — batched, concrete, opinionated
+## 5. Ask — batched, concrete, opinionated
 
 Use `AskUserQuestion`. Not open dialogue: the operator picks rather than composes.
 
@@ -223,7 +281,7 @@ their pick in your own words is what surfaces a misread while it is still cheap.
 
 ---
 
-## 5. Write the plan, then persist what outlives it
+## 6. Write the plan, then persist what outlives it
 
 A document, not a conversation. It should be enough for someone else — or a
 dispatched agent — to build from.
@@ -232,7 +290,10 @@ dispatched agent — to build from.
 # <feature>
 
 ## What this is
-<2-3 sentences, plain language: what changes and for whom.>
+<The five lines from §3, as agreed — what it is, why now, effect, if we don't,
+and what was asked. Not rewritten: they were checked with the operator before a
+single question was asked, so they are the one part of this document already
+known to be right.>
 
 ## Decisions
 <Each answered question, and what was chosen. One line each. Mark the 📖 and ⚖️

@@ -33,7 +33,35 @@ Reads the project first, decides everything it can already answer, and asks you
 only about the decisions that are expensive to reverse. Ends with a written plan,
 not a conversation. It does not enter plan mode and does not implement.
 
-Three things it does differently:
+Four things it does differently:
+
+**It says what the work is before it asks you anything.** Investigation gives it
+a picture you cannot see, so it states that back first — five short lines, no
+jargon, readable by someone who has never opened the project: what this is, why
+now, what changes and for whom, what it costs to leave alone, and how many
+questions are coming.
+
+```
+**Shipment splitting** — an order too large for one van currently fails at
+checkout instead of going out in two.
+
+Why now      Support is refunding roughly one order a week over this.
+Effect       Large orders complete; customers see two deliveries, not an error.
+If we don't  The failure stays silent — nothing logs it as a lost sale.
+Ahead        4 questions: naming, cancellation, one API shape, one scope line.
+```
+
+It is a checkpoint rather than a preamble: if the understanding is wrong, every
+question after it is wrong too, and this is the cheapest moment to catch that.
+The lines have to be *derived* — if they contain nothing you did not already
+type, the reading was not done. **"If we don't"** is often the most useful line
+on the screen, and for a bug the reason is the failure people hit, not the defect
+("customers are charged twice and we refund by hand", not "the total is computed
+twice"). Nothing unclear? It says so and skips the questions entirely — a
+question round is not proof of diligence.
+
+The same five lines open the finished plan, unrewritten, because they are the one
+part of it already known to be right.
 
 **The test is reversibility, not difficulty.** A decision earns a question when
 the repo cannot answer it *and* being wrong is costly to undo — schema and data

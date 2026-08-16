@@ -1,5 +1,47 @@
 # Changelog
 
+## shape-it 1.3.0
+
+**Say what the work is before asking anything about it.** Investigation gives the
+agent a picture the operator cannot see, and the skill went straight from that to
+a question round — so the first thing the operator was asked to do was answer
+questions about a reading they had not seen. A misread stayed invisible until it
+was already baked into a plan.
+
+A new §3 states it back first: five short lines, no jargon, readable by someone
+who has never opened the project. What this is; **why now**; what changes and for
+whom; **what it costs to leave alone**; and how many questions are coming.
+
+```
+**Shipment splitting** — an order too large for one van currently fails at
+checkout instead of going out in two.
+
+Why now      Support is refunding roughly one order a week over this.
+Effect       Large orders complete; customers see two deliveries, not an error.
+If we don't  The failure stays silent — nothing logs it as a lost sale.
+Ahead        4 questions: naming, cancellation, one API shape, one scope line.
+```
+
+It is a checkpoint, not a preamble — the cheapest possible moment to catch a
+wrong understanding, because every question after it inherits the error.
+
+Four rules keep it from becoming ceremony. It must be **derived, not echoed**: if
+the five lines contain nothing the operator did not already type, §1 was not
+finished. **Plain words only** — a framing only the team can read cannot be
+checked by anyone else. **For a bug, the reason is the failure, not the defect**
+("customers are charged twice and we refund by hand", not "the total is computed
+twice"), which is also how a plan gets cancelled before it is written when the
+honest answer is that the bug costs nothing. And the **question count is a
+promise**, stated up front so the operator knows what they are committing to,
+not a first guess to be revised upward.
+
+Nothing unclear? It says so and skips the questions — a question round is not
+proof of diligence.
+
+The same five lines become the plan's `## What this is`, unrewritten. They were
+agreed before a single question was asked, which makes them the one part of the
+document already known to be right.
+
 ## shape-it 1.2.0
 
 **The domain model stops assuming source code.** 1.1.0 was written for
