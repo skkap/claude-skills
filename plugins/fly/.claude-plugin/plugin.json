@@ -1,7 +1,7 @@
 {
   "name": "fly",
-  "version": "1.0.1",
-  "description": "Ship the current work as a pull request with every local check green — reads the repo's CHECKS.md, runs the checks, fixes what breaks, commits, pushes, and opens or updates the PR. Does not wait on CI.",
+  "version": "1.1.0",
+  "description": "Ship the current work as a pull request with every local check green — reads the repo's CHECKS.md, runs the checks, fixes what breaks, commits, pushes, and opens or updates the PR — as a draft with --draft. Does not wait on CI.",
   "author": {
     "name": "skkap"
   },

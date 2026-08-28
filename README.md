@@ -483,6 +483,11 @@ it's right.
 A CI failure that the local run should have caught is treated as a `CHECKS.md`
 defect, fixed in the same PR.
 
+**`--draft`** opens the PR as a draft, for work that is finished but not yet
+asking for a reviewer's time. It only ever applies to a PR `fly` is creating: on
+an already-open PR the flag is ignored, and without the flag a draft PR is never
+promoted to ready. Draft state belongs to whoever set it.
+
 #### `CHECKS.md`
 
 One file at the repo root, one section per independently-scoped component:

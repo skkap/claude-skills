@@ -1,5 +1,24 @@
 # Changelog
 
+## fly 1.1.0
+
+### `--draft`
+
+`fly` opens a PR and, until now, always opened it ready for review. Work that is
+finished but not yet asking for a reviewer's time had no way through it — a
+branch still going through review rounds, or one waiting on something outside the
+repo. `--draft` adds `--draft` to `gh pr create`.
+
+Two rules, because draft state is easy to get subtly wrong. The flag **never
+changes an existing PR** — on one already open it is ignored and the report says
+so, because flipping someone's ready PR back to draft mid-review is not a thing a
+shipping skill should do on a flag. And the absence of the flag changes nothing
+either: `fly` does not promote a draft to ready on a later run. Draft state
+belongs to whoever set it.
+
+The report distinguishes the two outcomes, since "PR opened" summons reviewers
+and "draft PR opened" does not.
+
 ## shape-it 1.5.0
 
 ### The plan is printed, not handed to a viewer

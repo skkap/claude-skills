@@ -1,6 +1,6 @@
 ---
 name: fly
-description: Ship the current work as a pull request with every local check green — read the repo's CHECKS.md (or derive its checks when there is none), branch off the default branch, run the checks and fix what breaks, commit, push, and open or update the PR. Finishes when the PR is open; it does not wait on CI. Use whenever the user says "fly", "ship it", "make a PR", "open a pull request", or asks to get the current work pushed and reviewable. Works in any repo; nothing here is project-specific.
+description: Ship the current work as a pull request with every local check green — read the repo's CHECKS.md (or derive its checks when there is none), branch off the default branch, run the checks and fix what breaks, commit, push, and open or update the PR. Finishes when the PR is open; it does not wait on CI. Use whenever the user says "fly", "ship it", "make a PR", "open a pull request", or asks to get the current work pushed and reviewable. Takes `--draft` to open the PR as a draft. Works in any repo; nothing here is project-specific.
 ---
 
 # fly — get the work onto a green PR
@@ -173,6 +173,25 @@ gh pr view --json number,url,state --jq '.state'   # empty/error ⇒ no PR yet
   commits on the branch, not just the new ones. A PR whose description covers half
   its diff is worse than one with no description.
 - **PR closed/merged** → don't reopen. Say so and stop.
+
+### `--draft`
+
+Called with `--draft`, the PR is opened as a draft: add `--draft` to
+`gh pr create`. This is for work that is finished but not yet asking for a
+reviewer's time — a branch still going through review rounds, or one waiting on
+something outside the repo.
+
+Two rules, because draft state is easy to get subtly wrong:
+
+- **`--draft` never changes an existing PR.** On a PR that is already open, the
+  flag is ignored and you say so in the report. Flipping someone's ready PR back
+  to draft mid-review is not a thing a shipping skill should do on a flag; use
+  `gh pr ready --undo` deliberately if that is really wanted.
+- **Without the flag, nothing is touched either.** `fly` does not promote a draft
+  PR to ready on a later run. A PR's draft state belongs to whoever set it.
+
+Report which one you opened. "Draft PR opened" and "PR opened" are different
+outcomes to the person reading the report, and the second one summons reviewers.
 
 Body leads with **why**, then what changed, then how it was verified, then what's
 still open. Be honest in that last part — a named rough edge is worth more than a
