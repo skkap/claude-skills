@@ -1,5 +1,123 @@
 # Changelog
 
+## shape-it 1.5.0
+
+### The plan is printed, not handed to a viewer
+
+`shape-it` and `shape-it-lite` ended by launching `plannotator annotate` on the
+plan file and waiting for annotations to come back. Both now write the file, say
+the path, and **print the whole plan in the reply** — the same text that went
+into the file, not a summary and not the headings.
+
+The file was never the problem; 1.4.0 was right that a plan is a document someone
+builds from and belongs on disk. What the viewer added was a dependency and a
+context switch between finishing the plan and reading it. Printing removes both:
+the path is the line worth copying and the plan is right there to argue with.
+
+Corrections arrive as ordinary messages now instead of as an annotation payload.
+Apply them to the file, say what changed, and reprint only the sections that
+moved — never the whole plan twice. In `shape-it`, a correction that changes a
+term or a fork still updates `DOMAIN.md` and `docs/decisions/`, which were
+written in §6 as the answers settled and were never part of the annotation pass
+anyway.
+
+`plannotator` remains a fine tool and is still worth pointing at by hand; these
+two skills simply no longer require it to finish.
+
+### `domain-adopt` ends by saying what the model just made wrong
+
+Writing `DOMAIN.md` was where the pass stopped, and that left the expensive half
+undone. The model says **Block**; the material still says *project* in ninety
+places — in variable names, in three component filenames, in two prompts, in the
+UI copy — and none of those places knew anything had changed.
+
+A sixth step now enumerates them into `docs/domain-alignment.md`. Its input is a
+join, not a fresh sweep: every `_Avoid_` word in the model and every headword the
+pass renamed, matched against what the harvest already found. A word nobody
+rejected is not debt, however untidy it looks, so the step cannot drift into a
+general tidy-up.
+
+**It produces a list and never a diff.** That is what makes it safe to keep
+inside the adoption pass rather than in a skill of its own — an adoption session
+that ended in a four-hundred-file rename would be a diff nobody reviews attached
+to a model nobody had agreed to yet. The report has to say plainly that nothing
+was renamed, because the list is the one part of it that reads like work already
+done.
+
+Rows sort by **blast radius**, not by folder, and the ordering is the content:
+
+| # | Radius | Cost | Default |
+|---|---|---|---|
+| 0 | prompts, skill files, agent templates | nothing | rename |
+| 1 | comments, task notes, locals, test names | mechanical | rename |
+| 2 | exports, types, filenames, components, i18n keys | one commit per module | rename |
+| 3 | columns, enum values, stored keys, filings | migration | decide |
+| 4 | public API fields, routes, UI copy, printed documents | breaks consumers | leave |
+
+Radius 0 goes first because it is free *and* it is the one doing damage. The
+skill already carried the evidence: a shipped data bug whose cause was a
+definition living only in a UI description string, which an extraction agent read
+and then mis-filed every record that did not match. A stale `CLAUDE.md` misleads
+a reader who can push back; a stale prompt writes wrong data at scale, silently,
+and it is a one-line fix.
+
+Radius 4 is opt-in and defaults to *leave* — published output is touched only
+where the entry's `_Avoid_` line says *"in published copy too"*. That reach rule
+in `DOMAIN-FORMAT.md` now says so at the point it is written, because getting it
+wrong there is no longer a documentation error, it is a diff. And a radius 3 or 4
+row that resolves to no earns a decision record: *"the `project_id` column keeps
+its name"* is a deliberate no, and without one it is re-proposed every year by
+someone who read `DOMAIN.md` and not the column.
+
+**No new marker.** The list lands inside `✅ Written`, because it is a file the
+pass wrote; whether to enforce the model with an `_Avoid_` check and a `_Kinds_`
+parity test is a `❓`, because it is a question. A fifth glyph would turn two
+axes back into one ranked list.
+
+### A large project is cut into rounds, not stretched into a longer pass
+
+Everything in the skill was sized for one sitting, and that holds to roughly
+forty candidate terms. Past it three things fail together: the proposal outgrows
+a screen, the question round reaches maybe eight of twenty conflicts, and what it
+cannot reach lands in `## Open questions` — which at that size is not a queue, it
+is a graveyard.
+
+The pass no longer gets longer. It gets cut, and the unit of work becomes **one
+area** rather than one project. Round 0 cuts and censuses; rounds 1…n run §1–§4
+and the report per area; round n+1 reconciles across areas; step five runs once
+over the whole thing.
+
+**Every cap in the file is now per round.** Ten to thirty terms, four questions,
+one screen of proposal — all correct for one area and absurd applied to a project
+with five.
+
+Three things this needed:
+
+- **The shape decision moved to the front.** Single `DOMAIN.md` or `DOMAIN-MAP.md`
+  plus per-area files used to be a footnote at the bottom of the proposal. It is
+  what the rounds are cut along, and finding out in round four that two earlier
+  rounds described the same area is a rewrite of both.
+- **A census, ranked by spread rather than by count.** Every candidate term
+  against the six surfaces it can appear on — agent-facing, working prose,
+  private names, shared names, registry, published. A term appearing two hundred
+  times inside one module is that module's business; a term appearing thirty
+  times across the schema, the copy and two prompts is the project's vocabulary,
+  and it is the one quietly carrying two meanings. The census is also what step
+  five is computed from, so it is gathered once.
+- **A reconciliation round.** A headword defined twice, in two areas' files, is
+  invisible from inside either round — which is exactly why one word carrying two
+  meanings survives in large projects for years. `DOMAIN-MAP.md`'s
+  `## Between areas` is now written from what the files say rather than from what
+  the layout suggests.
+
+The pass's own bookkeeping — the area cut, the sources swept, the census, each
+candidate's verdict — is scaffolding and goes outside the repository, at
+`~/.local/share/domain-adopt/<repo>/`, on the same rule 1.4.0 set for plans. A
+week-long pass should not put a week of its own notes in someone's `git status`.
+`docs/domain-alignment.md` is the exception, because other people drain it.
+
+Neither file exists on a small project: one sitting, six steps, no ledger.
+
 ## shape-it 1.4.0
 
 ### New skill: `shape-it-lite`

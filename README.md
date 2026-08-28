@@ -103,12 +103,13 @@ in one line per question and hands you one open turn, so a qualifier that spans
 several questions has somewhere to go — the picker's free-text box belongs to a
 single question, and most corrections do not.
 
-Both versions end the same way: the plan is **written to a file and opened in
-[plannotator](https://github.com/backnotprop/plannotator)** for you to annotate,
-and the annotations are then applied. The file never lands in a directory that
-had to be created for it — an existing `docs/plans/` if there is one, otherwise
-`~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden in someone
-else's `git status` is its own small failure.
+Both versions end the same way: the plan is **written to a file and then printed
+in full** — path first, then the plan itself, so it can be read and argued with
+without opening anything. Corrections come back as ordinary messages and are
+applied to the file. No viewer is launched. The file never lands in a directory
+that had to be created for it — an existing `docs/plans/` if there is one,
+otherwise `~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden
+in someone else's `git status` is its own small failure.
 
 ---
 
@@ -388,8 +389,8 @@ that triggered on "this project has no `DOMAIN.md`" would fire exactly when it i
 least welcome. `domain` keeps the *offer*, at the end of a session with the terms
 in hand; this is what runs if you say yes.
 
-Five steps — **explore → propose → ask → write → report** — and **nothing is
-written until step four**.
+Six steps — **explore → propose → ask → write → align → report** — and **nothing
+is written until step four, nothing renamed at any point**.
 
 The proposal step is what makes it safe. Seeding a file with thirty terms nobody
 reviewed installs thirty definitions, and the wrong ones get copied by every
@@ -419,6 +420,42 @@ belonging in `DOMAIN.md`, or to-dos belonging where to-dos live. And vocabulary
 *moves* out of `CLAUDE.md` rather than being copied out — instructions stay, a
 one-line pointer replaces what left, because a summary left behind is a second
 definition and it will be the one that drifts.
+
+#### It ends with a list of what the model just made wrong
+
+Writing `DOMAIN.md` does not change the ninety places the material still says
+*project* where the model now says **Block**. Step five enumerates them —
+`docs/domain-alignment.md` — and stops there. **A list, never a diff:** an
+adoption session that ends in a four-hundred-file rename is a diff nobody reviews
+attached to a model nobody agreed to.
+
+Rows are sorted by blast radius rather than by folder, which decides the order
+they get drained in:
+
+| # | Radius | What it costs | Default |
+|---|---|---|---|
+| 0 | prompts, skill files, agent templates | nothing | rename |
+| 1 | comments, task notes, locals, test names | mechanical | rename |
+| 2 | exports, types, filenames, components, i18n keys | one commit per module | rename |
+| 3 | columns, enum values, stored keys, filings | migration | decide |
+| 4 | public API fields, routes, UI copy, printed documents | breaks consumers | leave |
+
+Radius 0 is first because it is free *and* it is the one doing damage — a stale
+`CLAUDE.md` misleads a reader who can push back, a stale prompt writes wrong data
+at scale and says nothing. Radius 4 is opt-in: published output is touched only
+where the entry's `_Avoid_` line says *"in published copy too"*, so an internal
+disambiguation problem never becomes a rewrite of good copy. Every `leave` row
+carries its reason, or the next person re-proposes it.
+
+#### A large project is cut into rounds, not stretched into a long pass
+
+Past roughly forty candidate terms the single sitting stops working: the proposal
+outgrows a screen, four questions reach a fifth of the conflicts, and the rest
+land in `## Open questions`, which at that size is a graveyard rather than a
+queue. So the unit becomes **one area per round** — cut first, census once, then
+§1–§4 per area, a reconciliation round that diffs headwords appearing in two
+areas' files, and step five over the whole thing at the end. Every cap in the
+skill — ten to thirty terms, four questions, one screen — is per round.
 
 ---
 

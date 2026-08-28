@@ -1,6 +1,6 @@
 ---
 name: shape-it
-description: Plan a piece of work by investigating the project first, stating in plain words what the work is and what it costs to skip, then deciding everything the project can already answer and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan to a markdown file and opens it for annotation in plannotator. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, stating in plain words what the work is and what it costs to skip, then deciding everything the project can already answer and asking only the decisions that are expensive to reverse — data models, public surfaces, vocabulary, scope boundaries, UI shape, business rules. Works on a codebase or on a project made of documents and records. Reads the project's domain model and decision records so a settled term is never re-asked, and writes the answers back to them. Uses batched multiple-choice questions rather than open dialogue, then writes the plan to a markdown file and prints it in full. Use when asked to plan a feature, think through an approach, scope work before building, or figure out what to build. Does not enter plan mode and does not implement.
 ---
 
 # shape-it — decide the obvious, ask what is expensive
@@ -346,7 +346,7 @@ rather than edit.
 
 ---
 
-## 7. Write it to a file, and open it for annotation
+## 7. Write it to a file, and print it
 
 The plan is a document someone builds from, so it lives in a file rather than in
 scrollback.
@@ -357,23 +357,25 @@ operator named; otherwise `~/.local/share/shape-it/<repo>/<slug>.md`. Say the
 full path, so it can be moved in one command if they want it committed. A plan
 turning up unbidden in someone else's `git status` is its own small failure.
 
-Then:
+**Then print the whole plan in your reply.** Not a summary of it, not the
+headings — the same text that went into the file, so it can be read and argued
+with without opening anything. The file is what survives; the printed copy is
+what actually gets read in the next thirty seconds, and a plan nobody reads is a
+plan nobody corrects.
 
-```bash
-plannotator annotate <path-to-plan.md>
-```
+Two things follow from printing it rather than handing over a link:
 
-That opens the plan for mark-up and returns the annotations when they are done.
-**Act on them**: apply what each asks, and say what changed. An annotation you
-cannot act on is worth answering in your report rather than silently skipping.
+- **Say the path first, then the plan.** The path is the one line worth copying,
+  and it is unfindable underneath eighty lines of plan.
+- **Do not open a viewer, and do not ask whether to.** The operator responds in
+  the conversation. Corrections come back as ordinary messages — apply them to
+  the file, say what changed, and print only the sections that moved, not the
+  whole plan again.
 
 This step is the plan's, not the model's. `DOMAIN.md` and `docs/decisions/`
 entries were already written in §6 as the answers settled — they are the
-project's files and are never staged for annotation. If the annotations change a
-term or a fork, update those files too and say so.
-
-If `plannotator` is not installed, say the plan is written, give the path, and
-stop — do not improvise a different viewer.
+project's files, and a correction that changes a term or a fork updates them too.
+Say so when it does.
 
 ---
 

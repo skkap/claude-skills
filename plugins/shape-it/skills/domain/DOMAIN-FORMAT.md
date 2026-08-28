@@ -65,6 +65,11 @@ and mark the exceptions on the entries themselves.
 - **Published output — only where the entry says so.** UI strings, printed copy,
   letters, anything with an audience outside the project.
 
+This line is also the one that decides how far a rename reaches when a model is
+adopted into an existing project — `domain-adopt` §5 will not propose touching
+published output unless the entry says so. Getting the reach wrong here is
+therefore not a documentation error; it is a diff.
+
 The distinction is that **ambiguity is contextual**. A word with four meanings in
 the project may have exactly one on the page where a reader meets it: *"Hot
 Spring Sources"* is unimprovable as a page heading even where bare "source" is

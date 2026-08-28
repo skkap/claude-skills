@@ -365,10 +365,11 @@ no one place. What they lack is a file holding *only* that, so something can rea
 only that.
 
 Say so, name a few of the terms you saw, and offer — then stop. Lifting them is a
-deliberate one-off pass with its own five-step procedure, and it lives in a
+deliberate one-off pass with its own six-step procedure, and it lives in a
 separate skill, **`domain-adopt`**, precisely so it cannot start by accident. It
-rewrites `CLAUDE.md` and creates files across the project; that has to be the
-session the operator asked for, not a detour inside one.
+rewrites `CLAUDE.md`, creates files across the project, and ends by listing every
+place the new model has just made wrong — names, docs, prompts, copy. That has to
+be the session the operator asked for, not a detour inside one.
 
 Your job here is the offer, and the offer belongs at the *end*. If they say yes,
 that is the next session.

@@ -1,7 +1,7 @@
 {
   "name": "shape-it",
-  "version": "1.4.0",
-  "description": "Plan a piece of work by reading the project first, saying in plain words what it is and what skipping it costs, then asking only what is expensive to reverse. Ends with a markdown plan opened for annotation in plannotator. `shape-it` reads and writes the project's DOMAIN.md and docs/decisions/ so answers outlive the plan; `shape-it-lite` is the same procedure without them, for repos that carry neither or cannot. Ships `domain` and the manual-only `domain-adopt` for maintaining the model itself.",
+  "version": "1.5.0",
+  "description": "Plan a piece of work by reading the project first, saying in plain words what it is and what skipping it costs, then asking only what is expensive to reverse. Ends with a markdown plan written to a file and printed in full. `shape-it` reads and writes the project's DOMAIN.md and docs/decisions/ so answers outlive the plan; `shape-it-lite` is the same procedure without them, for repos that carry neither or cannot. Ships `domain` and the manual-only `domain-adopt` for maintaining the model itself; adoption ends with a blast-radius-sorted list of everything the new model made wrong.",
   "author": {
     "name": "skkap"
   },

@@ -1,6 +1,6 @@
 ---
 name: shape-it-lite
-description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan opened for annotation in plannotator. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan written to a file and printed in full. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode and does not implement.
 ---
 
 # shape-it-lite — the questions and the plan, nothing else
@@ -276,22 +276,16 @@ is the honest signal that this project has outgrown the lite version.
 
 ---
 
-## 6. Open it for annotation
+## 6. Print it
 
-```bash
-plannotator annotate <path-to-plan.md>
-```
+Say the path, then print the whole plan in your reply — the same text that went
+into the file, not a summary of it and not the headings. The file is what
+survives; the printed copy is what gets read now, and a plan nobody reads is a
+plan nobody corrects.
 
-That opens the plan in plannotator's UI and returns the operator's annotations
-when they are done. **Then act on them**: read every annotation, apply what it
-asks to the file, and say what you changed. An annotation you cannot act on is
-worth answering in your report rather than silently skipping.
-
-Re-open the file only if the changes were substantial enough to want a second
-pass; a small correction is better reported in text than re-annotated.
-
-If `plannotator` is not installed, say the plan is written, give the path, and
-stop — do not improvise a different viewer.
+Do not open a viewer, and do not ask whether to. Corrections come back as
+ordinary messages: apply them to the file, say what changed, and print only the
+sections that moved rather than the whole plan again.
 
 ---
 

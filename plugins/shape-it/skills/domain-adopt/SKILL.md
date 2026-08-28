@@ -1,6 +1,6 @@
 ---
 name: domain-adopt
-description: "Seed a project's DOMAIN.md and docs/decisions/ from vocabulary already scattered through its CLAUDE.md, README, decision logs and documents — a one-off adoption pass that explores, proposes a candidate model, asks about the conflicts, writes, and reports. INVOKE ONLY WHEN EXPLICITLY ASKED: the operator says adopt, seed, bootstrap or set up a domain model for a project. Never start one as a side-effect of other work — it is a documentation session that rewrites CLAUDE.md, and it displaces whatever the operator actually asked for. For ongoing model maintenance during normal work, use the `domain` skill instead."
+description: "Seed a project's DOMAIN.md and docs/decisions/ from vocabulary already scattered through its CLAUDE.md, README, decision logs and documents — a one-off adoption pass that explores, proposes a candidate model, asks about the conflicts, writes, reports, and ends by listing everything in the project the model has just made wrong — variable and file names, documentation, prompts, published copy — as a backlog, never as a rename. Cuts a large project into one round per area rather than one pass. INVOKE ONLY WHEN EXPLICITLY ASKED: the operator says adopt, seed, bootstrap or set up a domain model for a project. Never start one as a side-effect of other work — it is a documentation session that rewrites CLAUDE.md, and it displaces whatever the operator actually asked for. For ongoing model maintenance during normal work, use the `domain` skill instead."
 ---
 
 # domain-adopt — seeding a project's `DOMAIN.md`
@@ -22,10 +22,12 @@ happened to notice the project has no `DOMAIN.md` — noticing that is the
 actually asked for. This pass rewrites `CLAUDE.md` and creates files across the
 project; it has to be the session, not a detour inside one.
 
-**One project per pass.** Rolling out across several is several passes, and the
-second is much better than the first, because the first will have found what the
-format does not yet handle. Which only helps if you write that down — see
-[§5](#5-report).
+**One project per pass — and on a large project, one *area* per round.**
+Rolling out across several projects is several passes, and the second is much
+better than the first, because the first will have found what the format does not
+yet handle. Which only helps if you write that down — see [§6](#6-report). Where
+one project is itself too big for a sitting, the cut is by area and the mechanism
+is [When the project is large](#when-the-project-is-large).
 
 **A partial model is the normal starting point, not an obstacle.** The `domain`
 skill offers adoption at the end of its sessions, so by the time anyone runs this
@@ -40,7 +42,8 @@ reading it.
 | `DOMAIN.md` structure | `DOMAIN-FORMAT.md` in `domain` |
 | Decision record structure and the gate | `DECISION-FORMAT.md` in `domain` |
 
-Five steps, in order, and **nothing is written until step 4**:
+Six steps, in order. **Nothing is written until step 4, and nothing is
+*renamed* at any point** — step 5 produces a list, not a diff.
 
 | | |
 |---|---|
@@ -48,7 +51,8 @@ Five steps, in order, and **nothing is written until step 4**:
 | **2. Propose** | Show the candidate model — before touching a file |
 | **3. Ask** | One batched round on the conflicts and the expensive gaps — *before writing* |
 | **4. Write** | `DOMAIN.md`, `docs/decisions/`, and the moves out of `CLAUDE.md` and out of whatever writes |
-| **5. Report** | What was written, what disagrees with what ships, what is open, what was left alone |
+| **5. Align** | List what the model has just made wrong — names, files, docs, copy — sorted by what each costs to change |
+| **6. Report** | What was written, what has to change, what disagrees with what ships, what is open |
 
 ---
 
@@ -96,6 +100,104 @@ number:
   is general vocabulary, owned by the wider world, and it stays out.
 - **Has it ever been used in two senses, or under two names?** If yes, harvest it
   even if it seems obvious. Those are the entries that pay.
+
+---
+
+## When the project is large
+
+The six steps assume one sitting, and that holds to roughly forty candidate
+terms. Past it three things fail at once: the proposal outgrows a screen, the
+question round reaches maybe eight of twenty conflicts, and everything it cannot
+reach lands in `## Open questions` — which at this size is not a queue, it is a
+graveyard.
+
+The pass does not get longer. It gets **cut**, and the unit of work stops being
+one project and becomes **one area**.
+
+| Round | What | Written |
+|---|---|---|
+| **0** | Cut into areas, then census | the ledger, and nothing in the project |
+| **1…n** | §1–§4 and §6, one area per round | that area's `DOMAIN.md` and decisions |
+| **n+1** | Reconcile across areas | `DOMAIN-MAP.md`, `## Between areas` |
+| **n+2** | §5 — align | `docs/domain-alignment.md` |
+
+**Every cap in this file is per round, not per pass.** Ten to thirty terms, four
+questions, one screen of proposal — all correct for one area and all absurd
+applied to a project with five. A round that ends having written one area's
+vocabulary has succeeded; the next round is a fresh budget.
+
+### Round 0 — cut, then census
+
+**Decide the shape first.** On a small project, whether the model is one
+`DOMAIN.md` or a `DOMAIN-MAP.md` plus per-area files is a footnote at the bottom
+of the proposal. Here it is the first decision, because it is what the rounds are
+cut along — and discovering in round four that two earlier rounds were describing
+the same area is a rewrite of both.
+
+Cut along what the material is already organised by: the top-level directories,
+the folders of documents, the teams. Not along what would make a tidy diagram. If
+the project's own layout does not suggest a cut, that is the answer — it is one
+area and it is merely long.
+
+**Then census, before defining anything.** This is the artefact that makes a
+large pass cheaper than n small ones, and it is the only new mechanism at scale:
+a table of every candidate term against every surface it appears on, with counts.
+
+| surface | in a codebase | in a records project |
+|---|---|---|
+| **agent-facing** | prompts, skill files, agent templates, briefing docs | the same |
+| **working prose** | docs, comments, commit messages, task notes | notes, memos, internal letters |
+| **private names** | locals, test names, internal helpers | draft filenames, working sheets |
+| **shared names** | exported symbols, types, files, directories, components, routes | document titles, folder names, form fields |
+| **registry** | the enum, `const` array, schema or column that actually ships | the filing, the register, the accounting system |
+| **published** | UI strings, i18n keys, public API fields, printed copy | filings, letters, contracts, anything sent |
+
+```
+term          agent  prose  private  shared  registry  published   verdict
+project         6      44      31      12       —          9       ⚠️ vs Block
+engagement      2      17       4       3       —          —       ⚠️ 2 readings
+deliverable     3      21       8      14       1          4       ✅
+handover        —       9       —       2       —          1       ✅
+```
+
+**Rank by spread, not by count.** A term appearing two hundred times inside one
+module is that module's business. A term appearing thirty times across the
+schema, the published copy and two prompts is the project's vocabulary — and it
+is the one quietly carrying two meanings, because each surface acquired its
+reading separately. Spread is the conflict signal; raw frequency is not.
+
+The census is also what §5 is computed from. Build it once: the same six surfaces
+sort two ways — by *where the word appears*, which is this table, and by *what it
+costs to change it*, which is the alignment list. A second sweep at the end is
+wasted work and will disagree with the first.
+
+### Round n+1 — reconcile across areas
+
+Only possible once every area's file is written, and it is where the most
+valuable finding of the whole pass lives: **a headword that appears in two areas'
+`DOMAIN.md` with two definitions.** No round can see that from the inside, which
+is exactly why one word carrying two meanings survives in large projects for
+years.
+
+Diff the headwords. For every term in more than one area, `DOMAIN-MAP.md`'s
+`## Between areas` gets the two questions `DOMAIN-FORMAT.md` names — who owns it,
+and which side is upstream — answered from what the files actually say rather
+than from what the layout suggests. Where the two definitions cannot both stand,
+that is a ⚠️ and a question, not a merge you perform.
+
+### Two working files, and only one belongs to the project
+
+- **The ledger** — the area cut, the sources already swept, the census, each
+  candidate's verdict, and each round's proposal file. It is scaffolding: it
+  exists so round four does not re-harvest what round one already rejected, and
+  it is worthless afterwards. It goes **outside the repository**, at
+  `~/.local/share/domain-adopt/<repo>/`, for the same reason a plan does — a pass
+  that spans a week should not put a week of its own bookkeeping in someone's
+  `git status`.
+- **`docs/domain-alignment.md`** — the output of §5. This one is the deliverable,
+  other people and other sessions drain it, so it lives in the project.
+
+Neither is needed on a small project. One sitting, six steps, no ledger.
 
 ---
 
@@ -161,7 +263,11 @@ repeatedly produces — a document type, a form, a report. A word the project ha
 named a folder after is a word it has already committed to.
 
 In a codebase the same source is the schema: table names, enum values and column
-names are the vocabulary that actually shipped.
+names are the vocabulary that actually shipped. Widen it past the schema —
+exported symbols and type names, component and directory names, route segments,
+i18n keys, CLI flags, error codes, test fixture names. Every one of those is a
+word somebody committed to, and the same inventory is what §5 is computed
+against, so gather it once.
 
 ### Verify every closed set against the live registry, never against prose
 
@@ -299,6 +405,20 @@ Keep the definitions to one line. The proposal is for judging *coverage and
 correctness of naming* — full entries come in step 4, and a proposal long enough
 to need scrolling stops being reviewed.
 
+### Past about forty candidates, the proposal is a file
+
+The compression above buys perhaps threefold, and then the screen runs out.
+Beyond that, write the round's proposal to a markdown file, say where it is, and
+hand back the turn — the operator reviews it in their own editor, term by term,
+marking the ones they disagree with. It is the same content and the same
+markers; only the medium changes, because a ninety-line proposal pasted into a
+conversation is one that gets skimmed to the bottom and approved wholesale, which
+is the failure this step exists to prevent.
+
+The file is scaffolding, so it goes beside the ledger, outside the repository.
+What comes back from it feeds §3: the terms they marked are the question round,
+and the ones they did not are settled.
+
 ### Grade the decisions here, in a table, before any are written
 
 The two gate conditions in `DECISION-FORMAT.md` are easy to nod along to and hard
@@ -333,6 +453,12 @@ cannot stall in front of the operator before producing anything — it is not a
 budget for the conversation. If they widen the scope afterwards, challenge a
 record, or ask for another sweep, that is new work and it gets its own questions.
 Refusing to ask because "the round is used up" is a misreading.
+
+**And it is four questions per *round*, not per project.** On a project cut into
+five areas that is five separate budgets spent five different weeks, which is the
+whole reason for the cut — four questions spread across ninety terms would leave
+the model unreviewed, and asking twenty in one sitting is the interview this step
+is about to warn you off.
 
 Ask about ⚠️ conflicts and about ❓ gaps where being wrong is expensive. Do not
 ask about anything marked ✅ — if two sources agree, that is the definition, and
@@ -489,6 +615,10 @@ So the same move as `CLAUDE.md`, applied to whatever writes:
 - **Say which wins.** "Where this prompt and `DOMAIN.md` disagree, `DOMAIN.md`
   wins and this prompt is stale."
 
+**Definitions only, here.** A prompt that also *uses* the wrong word in its
+instructions is a §5 row, not a §4 edit — leave the word where it is for now, so
+the two steps do not each half-fix the same file and leave neither auditable.
+
 ⚠️ **Check what the test suite pins into those files before deleting anything.**
 Prompts are sometimes guarded by parity tests asserting they contain particular
 lists or definitions, and finding that out after the deletion means a broken
@@ -498,7 +628,134 @@ prompt.
 
 ---
 
-## 5. Report
+## 5. Align — list what has to change; change nothing
+
+The model now says **Block**, and the material says *project* in ninety places.
+Those ninety places are the reason writing the model was worth doing, and acting
+on them here is the fastest way to waste it: an adoption session that ends in a
+four-hundred-file rename is a diff nobody reviews, attached to a model nobody
+agreed to yet.
+
+> **This step produces a list. It does not produce a diff.**
+
+That is what makes it safe to keep inside the adoption pass rather than in a
+session of its own. The list is drained later, by ordinary work, at whatever pace
+the project can absorb — and it is **re-runnable**: every later `domain` session
+that adds an `_Avoid_` line makes a few more rows, and regenerating the file is a
+query, not a pass.
+
+**It is a join, not a sweep.** The input is exactly two things — every `_Avoid_`
+word in the model, and every headword the pass *renamed* — matched against the
+census from round 0, or against a grep per word where the pass was small enough
+not to need one. A word nobody rejected is not debt, however untidy it looks. §5
+is not a general tidy-up and must not become one.
+
+Distinct from §4, which is easy to confuse with it: §4 deletes **definitions**
+from the files that carry them. §5 lists **wrong words**, everywhere, including
+in those same files.
+
+### Sort by blast radius, not by folder
+
+The census's six surfaces, re-sorted by what changing one costs. This ordering is
+the whole content of the step.
+
+| # | Radius | Surfaces | What it costs | Default |
+|---|---|---|---|---|
+| **0** | Agent-facing | prompts, skill files, templates, briefing docs | nothing — edit the file | **rename** |
+| **1** | Free | comments, task notes, internal docs, locals, test names | mechanical, one commit | **rename** |
+| **2** | Internal contract | exported symbols, types, files, directories, components, i18n keys | compiles-or-fails; one commit per module | **rename** |
+| **3** | Persisted | columns, enum values, stored JSON keys, record filenames, filings | migration and backfill | **decide** |
+| **4** | Published | public API fields, routes, UI copy, printed documents, letters | breaks consumers | **leave** |
+
+**Radius 0 is first because it is free and it is the one doing damage.** §4
+already carries the evidence: a shipped data bug whose cause was a definition
+living only in a UI description string, read by an extraction agent that then
+mis-filed every record that did not match it. A stale `CLAUDE.md` misleads a
+reader who can push back; a stale prompt writes wrong data at scale, silently,
+and it is a one-line fix. Anything that puts it last has the economics backwards.
+
+**Radius 4 is opt-in and its default is *leave*.** Published output is touched
+only where the entry's `_Avoid_` line says *"in published copy too"* — the reach
+rule in `DOMAIN-FORMAT.md`, doing precisely the job it was written for. A word
+ambiguous across a whole project is usually unambiguous on the one page a reader
+meets it, and rewriting good copy to settle an internal disambiguation problem
+the reader does not have is how this discipline gets a bad name.
+
+**Radius 3 and 4 rows that resolve to *no* earn a decision record.** *"The
+`project_id` column keeps its name"* is a real decision — hard to reverse in the
+sense that matters, weighed against a real alternative, and guaranteed to be
+proposed again every year by someone who read `DOMAIN.md` and not the column. The
+deliberate-no shape is in `DECISION-FORMAT.md`; the recurrence test is met by
+construction here.
+
+### The file
+
+```md
+# Domain alignment — Acme
+
+Generated 2026-08-24 from DOMAIN.md. Drain it and delete it.
+Radius 0–2 are cleanup. Radius 3–4 are decisions; do not act on them unasked.
+
+## 0 · Agent-facing
+
+- [ ] **Block** ← `engagement` · `prompts/extract.md`, `.claude/agents/filer.md` · 6
+- [ ] **Deliverable** ← `artifact` · `prompts/review.md` · 3
+
+## 2 · Internal contract
+
+- [ ] **Block** ← `project` · `src/scheduling/` — 12 exports, 4 filenames, `ProjectCard.tsx` · 41
+      Splits into two commits: the rename, then `ProjectCard` → `BlockCard`.
+- [ ] **Rate** ← `price` · `src/billing/rates.ts` · 7
+
+## 4 · Published — leave unless stated
+
+- [x] **Block** ← `project` · 9 UI strings, `en.json` · **leave**
+      `_Avoid_` binds working language only; "Project" is what the client calls
+      their own thing and reads correctly on the page.
+- [ ] **Sento** ← `not-onsen` phrasing · `about.html`, the printed leaflet · 2
+      Entry binds published copy too — this one is a factual error, not a
+      preference.
+```
+
+Four things every row carries, and it is unusable missing any of them:
+
+- **The count.** A six-occurrence rename and a six-hundred-occurrence rename are
+  different proposals. A backlog without counts gets estimated wrong every time
+  somebody looks at it.
+- **The locations**, concretely enough to start from — a directory and a shape,
+  not "throughout the codebase".
+- **The action**, chosen, not left open: rename, leave, or defer. A row with no
+  action is a question, and questions belong in `## Open questions`.
+- **A reason on every *leave*.** This is the one people skip and the one that
+  decides whether the file is read twice. A bare `leave` gets re-litigated by the
+  next person who opens `DOMAIN.md`, and they will reach a different answer,
+  because you did not tell them why.
+
+### Offer the guard; do not install it
+
+Once radius 0–2 are drained, two checks stop the list regenerating:
+
+- a test that fails when an `_Avoid_` word appears in working language, and
+- a parity test per `_Kinds_` line, asserting the closed set in the model still
+  matches the registry that ships it.
+
+Both are worth having and neither is yours to add unasked — §3 already puts that
+trade to the operator, and it is the same trade here with a number attached: the
+guard cannot go green until the list above is drained, so proposing it while
+radius 1 is still full is proposing a red build. Offer it in §6 as the thing that
+follows the cleanup, not as part of it.
+
+### Finished means empty and deleted
+
+`docs/domain-alignment.md` is a queue. A half-drained one left in `docs/` for a
+year is another copy of the vocabulary, freshly wrong, and that is the exact
+condition this whole pass exists to end. When the rows are gone the file goes;
+if the project tracks work elsewhere, move the radius 2+ rows there on day one
+and keep only what is not yet dispatched.
+
+---
+
+## 6. Report
 
 Same markers, one screen:
 
@@ -509,6 +766,11 @@ Same markers, one screen:
                         dated from git history, 2024-03 → 2025-11
    CLAUDE.md            parameters table removed, one-line pointer left
    prompts/extract.md   feature definitions removed, cites DOMAIN.md
+   docs/domain-alignment.md
+                        38 rows, nothing renamed — 6 radius 0 (prompts and
+                        agent files: free, and the ones doing damage),
+                        11 radius 1, 19 radius 2, 2 radius 4 both left
+                        with reasons
 
 ⚠️ Found disagreeing with what actually ships — 3
    CLAUDE.md listed 6 categories; the export has 3 (stale since the restructure)
@@ -519,6 +781,10 @@ Same markers, one screen:
    Matter vs Engagement after the rename
    Whether Pickup is a kind of Shipment or its own entry
    …
+
+❓ For you — should the model be enforced?
+   An `_Avoid_` check plus a `_Kinds_` parity test, once radius 0–2 are
+   drained. Real churn, and the only thing that stops the list regrowing.
 
    Left alone: response style, git conventions, the folder index,
    DECISIONS.md rows 10–11 (open to-dos), the highlight definitions in
@@ -532,8 +798,19 @@ the model rejects, dead strings for a thing that no longer exists. Those are
 findings the operator can act on today, unlike the model itself, which pays out
 later. Reporting them as a bare "left alone" buries them.
 
-Then stop. The model is now something a session can read; it does not also need
-to be finished.
+**Say plainly that nothing was renamed.** The alignment list is the one part of
+this report that reads like work already done, and it is not — it is work now
+visible. An operator who believes the rename happened will find out from a grep
+in three weeks.
+
+**The list stays inside `✅ Written`, and the guard is a `❓`.** No new glyph for
+"needs changing" — `docs/domain-alignment.md` is a file this pass wrote, which is
+what `✅` means here, and whether to enforce the model is a question, which is
+what `❓` means. A fifth marker would turn two axes back into one ranked list.
+
+Then stop. The model is now something a session can read, and the project has a
+list of where it disagrees with itself. Neither of those also needs to be
+finished today.
 
 ### Before you finish: what didn't the format handle?
 
@@ -542,6 +819,7 @@ first — is only true if the first one leaves a record. So close by asking
 yourself, and telling the operator, in three or four lines:
 
 - What source turned out to be worth more, or less, than its position in §1?
+- Which radius in §5 was fullest, and was the ordering right for this project?
 - What did you have to invent because no file specified it?
 - Where did the procedure and the project actually disagree?
 
