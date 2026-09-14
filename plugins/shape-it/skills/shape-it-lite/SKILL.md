@@ -1,6 +1,6 @@
 ---
 name: shape-it-lite
-description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan written to a file and printed in full. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode and does not implement.
+description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan written to a file — or onto the task, in a repo tracked in Zumino — printed in full, then one question: implement here, open it in Plannotator, or hand it to land-it. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode, and implements only when that is chosen at the end.
 ---
 
 # shape-it-lite — the questions and the plan, nothing else
@@ -109,6 +109,24 @@ Two axes, and both must point the same way before you ask.
 hard to *undo*. A tricky algorithm behind a stable interface is cheap. A column
 name in a shipped table is not.
 
+### Before any question goes in the picker
+
+A question must pass all three:
+
+1. **Neither the project nor the input answers it** — not the code, not the
+   ticket, not a comment explaining an earlier choice.
+2. **Getting it wrong means rework after the build** — a name or wording people
+   will read, a business rule, a UI shape, a data shape, a public surface. A call
+   that one later message could reverse for free does not qualify.
+3. **You have no default you would defend.** If you would recommend an option and
+   stand behind it, that is not a question — it is a decision. Make it, and list
+   it under *Decided without asking*, where overturning it costs the operator one
+   line.
+
+**Zero questions is a normal outcome**, and for well-specified work the usual
+one. A question round exists for real forks, not to show that forks were looked
+for.
+
 ---
 
 ## 3. Say what this is, in plain words, before asking anything
@@ -157,8 +175,10 @@ Four things keep it honest:
   committing to. A second round is allowed if the answers open a genuinely new
   fork; the count is not a first guess to be quietly revised upward.
 
-**If nothing is unclear, say that instead** — five lines and "no questions, I can
-plan this as described". A question round is not proof of diligence.
+**If nothing passes the test in §2, say so and keep going.** The *Ahead* line
+reads "no questions", and the plan follows in the same response. Do not stop to
+have the five lines confirmed — they open the plan, where a misread is just as
+visible and costs one message to correct.
 
 ---
 
@@ -189,38 +209,45 @@ screen. Previews are single-select only.
 stored before agreeing what the thing is, and a naming answer routinely dissolves
 a technical question that looked open.
 
-### Then the notes turn
+### Then go straight to the plan
 
-The picker is fast and narrow: one choice per question, and the free-text `Other`
-box belongs to a single question. Anything the operator wants to say *across*
-questions has nowhere to go.
+When the answers come back, write the plan. **No confirmation round** — no "anything
+to correct or add?". The plan's *Decisions* section restates each answer in your
+own words, one line each, and that is where a misread surfaces; a correction is
+one message against a document, not a turn spent before it exists.
 
-So after every round, before writing anything, echo what you heard and hand back
-one open turn:
-
-```
-Round 1 answered.
-
-Heard:
-  Q1 split naming  → the parts are Shipments, the whole stays one Order
-  Q2 cancellation  → each Shipment cancels independently
-  Q3 scope         → partial refunds deferred
-
-Anything to correct or add before I write the plan?
-```
-
-**Echo the answer, not the option label** — restating their pick in your own
-words is what surfaces a misread while it is still cheap. **One line per
-question.** **Ask once per round and then move**, whatever they say or do not.
+A second round is still allowed, but only when an answer opened a fork that
+passes §2's test on its own.
 
 ---
 
-## 5. Write the plan to a file
+## 5. Write the plan down
 
 A document, not a conversation. Enough for someone else — or a dispatched agent —
 to build from.
 
-### Where the file goes
+### In a repo tracked in Zumino, the plan goes on the task
+
+A repo is tracked in Zumino when it has a `.zumino.json` at its root, or when the
+input is a task code (`ONS-14`). There the plan lives on the task, not in a file.
+Load the **`zumino`** skill for the CLI.
+
+- **Which task.** The one the input names. If it names none, create one —
+  `zumino task create` with a specific title and the five lines as its
+  description — after a `zumino find` for the same work, and name any near-miss
+  in your report. Never put the plan on a task the input did not name: `--plan`
+  replaces whatever plan it had.
+- **The plan:** `zumino task spec <code> --plan "$(cat <working copy>)"`.
+- **Acceptance criteria**, in a separate call — the CLI takes one section at a
+  time. When the task has none, write the criteria the plan implies: concrete,
+  checkable, one line each, so the task meets the queue's bar. When it already
+  has some, never replace them; if the plan disagrees with them, say so.
+- **Never edit an existing description.**
+- Keep a working copy at `~/.local/share/shape-it/<repo>/<slug>.md` — it is what
+  Plannotator annotates — but report the **task code and its URL** as where the
+  plan lives.
+
+### Everywhere else — where the file goes
 
 **Never create a directory inside a repository to hold it.** This skill exists
 partly for projects you do not own, and a new `docs/plans/` in a client's
@@ -276,23 +303,40 @@ is the honest signal that this project has outgrown the lite version.
 
 ---
 
-## 6. Print it
+## 6. Print it, then ask what next
 
-Say the path, then print the whole plan in your reply — the same text that went
-into the file, not a summary of it and not the headings. The file is what
-survives; the printed copy is what gets read now, and a plan nobody reads is a
-plan nobody corrects.
+### Print it
 
-Do not open a viewer, and do not ask whether to. Corrections come back as
-ordinary messages: apply them to the file, say what changed, and print only the
-sections that moved rather than the whole plan again.
+Say where the plan lives — the path, or the task code and URL — then **print the
+whole plan in your reply**. Not a summary, not the headings: the same text that
+was written. The stored copy is what survives; the printed one is what actually
+gets read in the next thirty seconds, and a plan nobody reads is a plan nobody
+corrects.
+
+### Then one question: what next
+
+End with a single `AskUserQuestion`, recommendation first:
+
+| Option | What happens when it is picked |
+|---|---|
+| **Implement here** | Build it in this session, following the plan. Usually the right default for work small enough to finish in one sitting. |
+| **Open in Plannotator** | `plannotator annotate <working copy>`. Apply each annotation, say what changed, and in a Zumino repo write the revised plan back with `--plan`. Offer it only when `command -v plannotator` finds it. |
+| **Start implementation with land-it** | Invoke `land-it` with the plan's path or task code, saying the plan was just approved here. It skips its own planning and its "Proceed?" and runs to a draft PR. Recommend it for ticket-sized work in a repo with a PR flow. |
+
+**Skip the question when `land-it` invoked you** — it says so when it hands over,
+and its gate is the handoff.
+
+Anything the operator types instead of picking is a correction: apply it to the
+plan (file and task), say what changed, and print only the sections that moved.
 
 ---
 
 ## Guardrails
 
-- **Do not enter plan mode.** This produces a plan as a file and stops.
-- **Do not implement**, and do not start "just the obvious part".
+- **Do not enter plan mode.** This produces a plan, then asks one question.
+- **Do not implement before the closing question**, and do not start "just the
+  obvious part". Building starts only when it is chosen there.
+- **Never ask a question that fails §2's test**, and never a confirmation round.
 - **Do not ask more than two rounds.** If the picture is still unclear, say what
   is unclear and why, rather than continuing to interrogate.
 - **Never ask what the project answers.** If you are asking about a convention,

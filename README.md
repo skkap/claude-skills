@@ -32,7 +32,8 @@ because prose tolerates two words for one thing far longer than a compiler does.
 
 Reads the project first, decides everything it can already answer, and asks you
 only about the decisions that are expensive to reverse. Ends with a written plan,
-not a conversation. It does not enter plan mode and does not implement.
+not a conversation. It does not enter plan mode, and it implements only if you
+choose that at the end.
 
 Four things it does differently:
 
@@ -58,8 +59,9 @@ The lines have to be *derived* — if they contain nothing you did not already
 type, the reading was not done. **"If we don't"** is often the most useful line
 on the screen, and for a bug the reason is the failure people hit, not the defect
 ("customers are charged twice and we refund by hand", not "the total is computed
-twice"). Nothing unclear? It says so and skips the questions entirely — a
-question round is not proof of diligence.
+twice"). Nothing unclear? It says "no questions" and goes straight on to the
+plan in the same response — a question round is not proof of diligence, and zero
+questions is the usual outcome for well-specified work.
 
 The same five lines open the finished plan, unrewritten, because they are the one
 part of it already known to be right.
@@ -70,7 +72,9 @@ model, public routes and event names, vocabulary that leaks into the UI and the
 API, scope boundaries, UI shape where there is no precedent, and business rules
 that exist nowhere in the code. A tricky algorithm behind a stable interface is
 cheap and gets decided for you; a column name in a shipped table is not. Anything
-the repo already demonstrates is a citation, not a question.
+the repo already demonstrates is a citation, not a question. And a question it
+could answer with a recommendation it would defend is not a question either: that
+is a decision, made and listed in the plan, where overturning it costs one line.
 
 **It shows its work on the silent decisions.** Letting an agent decide freely is
 only safe if the calls it made alone are visible, so the plan carries a
@@ -98,18 +102,25 @@ choose how to store a thing before agreeing what the thing is.
 
 Questions arrive batched — up to four at once, each option stating its
 consequence rather than its name, with a recommendation marked. Two rounds at
-most; past that it is an interview. After each round it echoes back what it heard
-in one line per question and hands you one open turn, so a qualifier that spans
-several questions has somewhere to go — the picker's free-text box belongs to a
-single question, and most corrections do not.
+most; past that it is an interview. The answers go straight into the plan — there
+is no "anything to correct?" round. The plan's *Decisions* section restates each
+answer in its own words, which is where a misread shows, and a correction is one
+message against a written document.
 
-Both versions end the same way: the plan is **written to a file and then printed
-in full** — path first, then the plan itself, so it can be read and argued with
-without opening anything. Corrections come back as ordinary messages and are
-applied to the file. No viewer is launched. The file never lands in a directory
-that had to be created for it — an existing `docs/plans/` if there is one,
-otherwise `~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden
-in someone else's `git status` is its own small failure.
+Both versions end the same way. The plan is **written down and printed in full** —
+where it lives first, then the plan itself, so it can be read and argued with
+without opening anything. In a repo tracked in Zumino (a `.zumino.json`, or a task
+code as the input) it goes onto the task: the plan field, and acceptance criteria
+when the task has none yet. Everywhere else it is a file, never in a directory that
+had to be created for it — an existing `docs/plans/` if there is one, otherwise
+`~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden in someone
+else's `git status` is its own small failure.
+
+Then one question, what next: **implement here**, **open it in Plannotator** (when
+it is installed — annotations are applied, and written back to the task in a
+Zumino repo), or **start implementation with `land-it`**, which then skips its own
+planning and its "Proceed?". When `land-it` is the one calling the planner, the
+question is skipped, because its gate is already the handoff.
 
 ---
 

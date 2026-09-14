@@ -1,5 +1,44 @@
 # Changelog
 
+## shape-it 1.6.0
+
+### A question has to earn its place, and nothing asks for confirmation
+
+Both planners asked questions a run did not need, and then asked one more —
+"anything to correct or add before I write the plan?" — after every round,
+whether or not anything was unclear. That turn decided nothing, and it cost the
+operator an interruption on every plan.
+
+§2 now puts every question through a three-part test: neither the project nor the
+input answers it; a wrong answer means rework after the build; and there is no
+default the planner would defend. A recommendation it would stand behind is a
+decision, listed under *Decided without asking*, where overturning it costs one
+line. Zero questions is stated as the normal outcome for well-specified work.
+
+The notes turn is gone. A run with no questions goes from the five lines straight
+into the plan in the same response; a run with questions goes from the answers
+straight into the plan. The plan's *Decisions* section restates each answer in
+the planner's own words, which is where a misread still shows.
+
+### The plan goes on the task in a Zumino-tracked repo
+
+A repo with `.zumino.json`, or an input that is a task code, keeps its plan on the
+task: `zumino task spec --plan`, on the task the input named, or on a new one
+filed after a `zumino find` for duplicates. When the task has no acceptance
+criteria the planner writes the ones the plan implies, so the task meets the
+queue's bar; existing criteria and descriptions are never replaced.
+
+### It ends with one question — and this reverses part of 1.5.0
+
+1.5.0 said "do not open a viewer, and do not ask whether to". The printing stays;
+the silence does not. A plan with no next step left the operator to type what was
+always one of three things, so both planners now end with a single
+`AskUserQuestion`: **implement here**, **open in Plannotator** (offered only when
+it is installed; annotations are applied and, in a Zumino repo, written back to
+the task), or **start implementation with land-it**, which then skips its own
+planning and its "Proceed?". The question is skipped when land-it is the caller,
+because its gate is already the handoff.
+
 ## fly 1.1.0
 
 ### `--draft`
