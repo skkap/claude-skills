@@ -109,16 +109,17 @@ message against a written document.
 
 Both versions end the same way. The plan is **written down and printed in full** —
 where it lives first, then the plan itself, so it can be read and argued with
-without opening anything. In a repo tracked in Zumino (a `.zumino.json`, or a task
-code as the input) it goes onto the task: the plan field, and acceptance criteria
-when the task has none yet. Everywhere else it is a file, never in a directory that
+without opening anything. When the work is a ticket, the repo's own instructions
+(`AGENTS.md`, `CLAUDE.md`) decide where the plan goes and how the ticket moves —
+the skill names no tracker — and acceptance criteria are added when the ticket has
+none yet. Everywhere else it is a file, never in a directory that
 had to be created for it — an existing `docs/plans/` if there is one, otherwise
 `~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden in someone
 else's `git status` is its own small failure.
 
 Then one question, what next: **implement here**, **open it in Plannotator** (when
-it is installed — annotations are applied, and written back to the task in a
-Zumino repo), or **start implementation with `land-it`**, which then skips its own
+it is installed — annotations are applied, and written back to the ticket when the
+plan lives on one), or **start implementation with `land-it`**, which then skips its own
 planning and its "Proceed?". When `land-it` is the one calling the planner, the
 question is skipped, because its gate is already the handoff.
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## shape-it 1.7.0
+
+### The planners name no tracker
+
+1.6.0 taught both planners one tracker by name — its config file, its task codes,
+its commands. A planner that knows a tracker has to be changed for every other
+tracker, and it decides a process that belongs to the project.
+
+Now, when the work is a ticket, **the repo's instructions (`AGENTS.md`,
+`CLAUDE.md`) decide** where the plan goes and how the ticket moves while it is
+shaped; the planners follow them. What stays in the skill holds for any tracker:
+the plan goes only on the ticket the input named, or a new one filed after a
+search for duplicates; acceptance criteria the plan implies are added only when
+the ticket has none; a description is never edited; the working copy still lives
+under `~/.local/share/shape-it/`. With no ticket process in the instructions, the
+plan is a file, as before.
+
 ## shape-it 1.6.0
 
 ### A question has to earn its place, and nothing asks for confirmation

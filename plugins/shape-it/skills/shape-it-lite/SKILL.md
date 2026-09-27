@@ -1,6 +1,6 @@
 ---
 name: shape-it-lite
-description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan written to a file — or onto the task, in a repo tracked in Zumino — printed in full, then one question: implement here, open it in Plannotator, or hand it to land-it. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode, and implements only when that is chosen at the end.
+description: Plan a piece of work by investigating the project first, saying in plain words what it is and what skipping it costs, then asking only the decisions that are expensive to reverse — and finishing with a markdown plan written to a file — or onto the ticket, where the repo's instructions keep plans in a tracker — printed in full, then one question: implement here, open it in Plannotator, or hand it to land-it. The stripped-down sibling of `shape-it`, for projects with no DOMAIN.md and no docs/decisions/ — it reads no domain model, writes none, and everything it settles lives in the plan. Use when asked to plan a feature, scope work before building, or think an approach through in a repo that carries no vocabulary or decision files, or one you cannot add them to. Does not enter plan mode, and implements only when that is chosen at the end.
 ---
 
 # shape-it-lite — the questions and the plan, nothing else
@@ -226,26 +226,29 @@ passes §2's test on its own.
 A document, not a conversation. Enough for someone else — or a dispatched agent —
 to build from.
 
-### In a repo tracked in Zumino, the plan goes on the task
+### When the work is a ticket, the repo says where the plan goes
 
-A repo is tracked in Zumino when it has a `.zumino.json` at its root, or when the
-input is a task code (`ONS-14`). There the plan lives on the task, not in a file.
-Load the **`zumino`** skill for the CLI.
+When the input names a ticket, or the repo's instructions (`AGENTS.md`,
+`CLAUDE.md`) say its work is tracked as tickets, **those instructions decide**
+where the plan lives and what happens to the ticket while it is being shaped —
+they name the tracker, its commands, and the state a ticket takes during
+planning. This skill names no tracker; do what they say, at the moment they say
+it. What holds for any tracker:
 
-- **Which task.** The one the input names. If it names none, create one —
-  `zumino task create` with a specific title and the five lines as its
-  description — after a `zumino find` for the same work, and name any near-miss
-  in your report. Never put the plan on a task the input did not name: `--plan`
-  replaces whatever plan it had.
-- **The plan:** `zumino task spec <code> --plan "$(cat <working copy>)"`.
-- **Acceptance criteria**, in a separate call — the CLI takes one section at a
-  time. When the task has none, write the criteria the plan implies: concrete,
-  checkable, one line each, so the task meets the queue's bar. When it already
-  has some, never replace them; if the plan disagrees with them, say so.
+- **Which ticket.** The one the input names. If it names none and the repo files
+  work as tickets, search the tracker for the same work first, then file one with
+  a specific title and the five lines as its description, and name any near-miss
+  in your report. Never write the plan onto a ticket the input did not name —
+  it replaces whatever plan that ticket had.
+- **Acceptance criteria**, when the ticket has none: the criteria the plan
+  implies — concrete, checkable, one line each. When it already has some, never
+  replace them; if the plan disagrees with them, say so.
 - **Never edit an existing description.**
 - Keep a working copy at `~/.local/share/shape-it/<repo>/<slug>.md` — it is what
-  Plannotator annotates — but report the **task code and its URL** as where the
+  Plannotator annotates — but report the **ticket and its URL** as where the
   plan lives.
+
+When the repo's instructions say nothing about tickets, the plan is a file.
 
 ### Everywhere else — where the file goes
 
@@ -307,7 +310,7 @@ is the honest signal that this project has outgrown the lite version.
 
 ### Print it
 
-Say where the plan lives — the path, or the task code and URL — then **print the
+Say where the plan lives — the path, or the ticket and its URL — then **print the
 whole plan in your reply**. Not a summary, not the headings: the same text that
 was written. The stored copy is what survives; the printed one is what actually
 gets read in the next thirty seconds, and a plan nobody reads is a plan nobody
@@ -320,8 +323,8 @@ End with a single `AskUserQuestion`, recommendation first:
 | Option | What happens when it is picked |
 |---|---|
 | **Implement here** | Build it in this session, following the plan. Usually the right default for work small enough to finish in one sitting. |
-| **Open in Plannotator** | `plannotator annotate <working copy>`. Apply each annotation, say what changed, and in a Zumino repo write the revised plan back with `--plan`. Offer it only when `command -v plannotator` finds it. |
-| **Start implementation with land-it** | Invoke `land-it` with the plan's path or task code, saying the plan was just approved here. It skips its own planning and its "Proceed?" and runs to a draft PR. Recommend it for ticket-sized work in a repo with a PR flow. |
+| **Open in Plannotator** | `plannotator annotate <working copy>`. Apply each annotation, say what changed, and write the revised plan back wherever it lives (the ticket, when it lives on one). Offer it only when `command -v plannotator` finds it. |
+| **Start implementation with land-it** | Invoke `land-it` with the plan's path or the ticket, saying the plan was just approved here. It skips its own planning and its "Proceed?" and runs to a draft PR. Recommend it for ticket-sized work in a repo with a PR flow. |
 
 **Skip the question when `land-it` invoked you** — it says so when it hands over,
 and its gate is the handoff.
