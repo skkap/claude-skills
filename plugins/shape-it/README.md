@@ -1,0 +1,475 @@
+# shape-it
+
+Plan a piece of work by reading the project first, then ask only what is expensive to get wrong —
+plus the domain model that keeps the answers. Part of [claude-skills](../../README.md).
+
+```
+/plugin marketplace add skkap/claude-skills
+/plugin install shape-it@skkap-skills
+```
+
+| Skill | Does |
+|---|---|
+| [`shape-it`](#shape-it--think-the-work-through-before-building-it) | Plan a piece of work; ask only what is expensive to get wrong |
+| [`shape-it-lite`](#shape-it-lite--the-questions-and-the-plan-nothing-else) | The same, minus the domain model — for repos that carry none |
+| [`domain`](#domain--one-set-of-words-written-down-once) | Maintain the project's `DOMAIN.md` and `docs/decisions/` |
+| [`domain-adopt`](#domain-adopt--seeding-a-model-into-a-project-that-has-none) | Seed a model into a project that has none — **manual only** |
+
+`shape-it` and `domain` work on any project — a codebase, a company's records, a
+knowledge vault, a research archive. Nothing in either depends on the material
+being source code, and a records project usually has the vocabulary problem worse,
+because prose tolerates two words for one thing far longer than a compiler does.
+
+---
+
+## `shape-it` — think the work through before building it
+
+Reads the project first, decides everything it can already answer, and asks you
+only about the decisions that are expensive to reverse. Ends with a written plan,
+not a conversation. It does not enter plan mode, and it implements only if you
+choose that at the end.
+
+Four things it does differently:
+
+**It says what the work is before it asks you anything.** Investigation gives it
+a picture you cannot see, so it states that back first — five short lines, no
+jargon, readable by someone who has never opened the project: what this is, why
+now, what changes and for whom, what it costs to leave alone, and how many
+questions are coming.
+
+```
+**Shipment splitting** — an order too large for one van currently fails at
+checkout instead of going out in two.
+
+Why now      Support is refunding roughly one order a week over this.
+Effect       Large orders complete; customers see two deliveries, not an error.
+If we don't  The failure stays silent — nothing logs it as a lost sale.
+Ahead        4 questions: naming, cancellation, one API shape, one scope line.
+```
+
+It is a checkpoint rather than a preamble: if the understanding is wrong, every
+question after it is wrong too, and this is the cheapest moment to catch that.
+The lines have to be *derived* — if they contain nothing you did not already
+type, the reading was not done. **"If we don't"** is often the most useful line
+on the screen, and for a bug the reason is the failure people hit, not the defect
+("customers are charged twice and we refund by hand", not "the total is computed
+twice"). Nothing unclear? It says "no questions" and goes straight on to the
+plan in the same response — a question round is not proof of diligence, and zero
+questions is the usual outcome for well-specified work.
+
+The same five lines open the finished plan, unrewritten, because they are the one
+part of it already known to be right.
+
+**The test is reversibility, not difficulty.** A decision earns a question when
+the repo cannot answer it *and* being wrong is costly to undo — schema and data
+model, public routes and event names, vocabulary that leaks into the UI and the
+API, scope boundaries, UI shape where there is no precedent, and business rules
+that exist nowhere in the code. A tricky algorithm behind a stable interface is
+cheap and gets decided for you; a column name in a shipped table is not. Anything
+the repo already demonstrates is a citation, not a question. And a question it
+could answer with a recommendation it would defend is not a question either: that
+is a decision, made and listed in the plan, where overturning it costs one line.
+
+**It shows its work on the silent decisions.** Letting an agent decide freely is
+only safe if the calls it made alone are visible, so the plan carries a
+*Decided without asking* section with the precedent for each. One wrong "obvious"
+call otherwise poisons everything downstream, and that list is what makes it
+cheap to catch.
+
+**Questions are typed by where the answer goes.** Two kinds of answer outlive the
+feature they were asked for, and each has a home:
+
+| | Type | The question | Lands in |
+|---|---|---|---|
+| 📖 | **Domain** | What is this thing, what do we call it, what kinds are there, how does it relate, what is always true of it | `DOMAIN.md` |
+| ⚖️ | **Decision** | Architecture, data model, public surface, lock-in — technology, counterparty or legal — and deliberate no-s | `docs/decisions/` |
+| | *(untyped)* | Everything else — UI shape, ordering, scope trims inside this piece of work | the plan only |
+
+The tag is not decoration. An untyped answer lives in one plan document and gets
+re-asked the next time anyone touches the area; a 📖 answer is written to the file
+every future session reads first. The split also makes it visible, at the moment
+of asking, whether you are being asked about *the business* or about *the build* —
+conflating those is what produces answers that sound decisive and settle nothing.
+
+Domain questions are asked before decision questions, because you cannot sensibly
+choose how to store a thing before agreeing what the thing is.
+
+Questions arrive batched — up to four at once, each option stating its
+consequence rather than its name, with a recommendation marked. Two rounds at
+most; past that it is an interview. The answers go straight into the plan — there
+is no "anything to correct?" round. The plan's *Decisions* section restates each
+answer in its own words, which is where a misread shows, and a correction is one
+message against a written document.
+
+Both versions end the same way. The plan is **written down and printed in full** —
+where it lives first, then the plan itself, so it can be read and argued with
+without opening anything. When the work is a ticket, the repo's own instructions
+(`AGENTS.md`, `CLAUDE.md`) decide where the plan goes and how the ticket moves —
+the skill names no tracker — and acceptance criteria are added when the ticket has
+none yet. Everywhere else it is a file, never in a directory that
+had to be created for it — an existing `docs/plans/` if there is one, otherwise
+`~/.local/share/shape-it/<repo>/`, because a plan turning up unbidden in someone
+else's `git status` is its own small failure.
+
+Then one question, what next: **implement here**, **open it in Plannotator** (when
+it is installed — annotations are applied, and written back to the ticket when the
+plan lives on one), or **start implementation with `land-it`**, which then skips its own
+planning and its "Proceed?". When `land-it` is the one calling the planner, the
+question is skipped, because its gate is already the handoff.
+
+---
+
+## `shape-it-lite` — the questions and the plan, nothing else
+
+Everything above minus the half that assumes a written vocabulary and a decision
+log. Same reading, same reversibility test, same framing, same batched questions.
+Gone: the 📖/⚖️ typing, `DOMAIN.md`, `docs/decisions/`.
+
+Use it when the project has neither of those files — most repos — or when it is
+**not yours to add them to**: a client's repository, someone else's open-source
+project, anything where a vocabulary file would need several other people to
+agree first. Use the full `shape-it` when they do exist, because reading them is
+most of its value.
+
+It states the trade rather than hiding it: everything settled here lives in one
+plan document, so the next person to touch the area will ask again and may answer
+differently. That is correct for a repo you do not own and wrong for one you do —
+and if you find yourself running it repeatedly on the same project, that project
+wants `shape-it` and a `DOMAIN.md`.
+
+---
+
+## `domain` — one set of words, written down once
+
+The active discipline behind the 📖 tag, and usable on its own for a session with
+nothing else attached: *"we keep saying account and meaning three things — let's
+fix that."*
+
+> **`DOMAIN.md` says what is true about the subject.
+> A decision record says why this setup is the way it is.**
+
+That line does the sorting. `DOMAIN.md` survives rebuilding the whole thing from
+scratch — different code, different tools, different filing system. A decision
+record does not.
+
+*"A Shipment is one physical dispatch, and an Order can produce several"* is
+domain; *"order totals are stored rather than recomputed from line items"* is a
+decision; *"the helper is called `formatMoney`"* is neither, and belongs nowhere.
+The test does not change when the project is made of documents instead of code:
+*"a Fiscal Year is the twelve months the company reports on, ending on the last
+day of the year-end month"* is domain, *"the year-end is May, because it
+maximises the first-year exemption and dodges the busy quarter"* is a decision,
+and *"scans live in `legal/docs/`"* is neither.
+
+During a session it challenges a word that conflicts with an entry **in the
+moment** rather than in a summary, proposes precise replacements for overloaded
+ones, and cross-checks against the material **in both directions** — material
+that contradicts a stated rule, and entries nothing references any more. The
+second direction is the one nobody checks and it costs one grep.
+
+**To get a model out of a person it asks for a story, not a definition.** *"Walk
+me through the last real one, start to finish — what came in, what you did, what
+came out, and what went wrong that time."* Three things fall out of a narration
+that no amount of asking for definitions produces: the words people use without
+noticing, which are the settled vocabulary; the order of things, which is where
+cardinality lives; and the rules — because nobody volunteers an invariant, they
+volunteer *"—except that time when…"* halfway through a story. Then, and only
+then, it invents the edge case that sits on a boundary the real story ran past.
+
+**Rules are the most valuable lines in the file**, not the leftovers. A
+definition says what a thing is; a rule says what you may not do with it, and
+that is the half that changes behaviour. A model made only of definitions
+produces work that is plausible and quietly wrong at the edges, because nothing
+in it ever says no. So a rule has to be specific enough to be violated — *"nobody
+signs off their own work"*, not *"we value alignment"* — and has to carry its
+exception in the same breath, since a rule missing its exception gets discovered
+as a bug.
+
+It writes an entry when the answer settles, in that turn. It never changes an
+existing definition silently, because something is already built on the old
+reading — code, or a document already sent. And it creates files lazily, with
+content in hand: the offer to start a `DOMAIN.md` comes at the *end* of a
+session, after the work, never as a precondition for starting it.
+
+**The exclusion that keeps the file short** is vocabulary the wider world owns.
+General technical vocabulary (debounce, idempotency) is the familiar half; the
+other is the general vocabulary of whatever field the project operates in —
+articles of incorporation, withholding tax, GAAP, GDPR, a SAFE. Those are statute
+or an industry's standard instrument, they are identical in every project that
+touches them, and copying them into four `DOMAIN.md` files produces four versions
+that drift. Where several projects need the same external vocabulary, one of them
+owns the definition and the rest link to it. What belongs to a project is only
+what *it* does with the term: *"the small-business exemption applies to us until
+the Fiscal Year ending May 2028"* is domain; what that exemption *is* is not.
+
+### Markers
+
+One set, defined here and used by all three skills — and it is **two independent
+axes**, not one list of five. A line answers both.
+
+*Where does this live?*
+
+| | | |
+|---|---|---|
+| 📖 | **domain** → `DOMAIN.md` | the lexicon — what things are called |
+| ⚖️ | **decision** → `docs/decisions/` | a choice that was weighed; alternatives existed |
+
+*What do I need from you?*
+
+| | | |
+|---|---|---|
+| ✅ | **nothing** | already written down, or two sources agree; shown so you can catch a wrong one, not confirm a right one |
+| ⚠️ | **your attention** | something is broken — one word, two meanings, or two sources disagreeing |
+| ❓ | **your answer** | a real gap; asked now, or parked in `## Open questions` |
+
+They combine, and the second marker is what carries the information:
+
+| | ✅ | ⚠️ | ❓ |
+|---|---|---|---|
+| **📖** | term already defined | one word, two meanings | term used, never defined |
+| **⚖️** | already recorded, e.g. `0004` | two records disagree | a fork — you are being asked to pick |
+
+`⚖️ ❓ retention window` is a decision *waiting to be made*; `⚖️ ✅ 0004` is one
+*already on disk*.
+
+They are not only for reports. Four moments get marked in ordinary prose: **📖**
+the first time a term is used *because `DOMAIN.md` defines it*, **⚠️** the instant
+a word in play conflicts with the model, **⚖️** when a call is made that belongs
+in a decision record, and **✅** when a question turns out to be already answered
+by an entry. That is what makes it visible that a plan is being built out of the
+project's language rather than an improvised one — and it is checkable, because a
+marker is a claim about what the model actually says.
+
+Three rules stop it becoming decoration: mark the term and not every noun, one
+marker per term per turn; never mark something you have not checked; and never
+put ⚖️ on a reversible choice or ✅ on something merely mentioned. A response with
+fifteen emoji is a response nobody scans.
+
+**⚠️ is the one worth hunting.** A single word carrying two meanings is the most
+expensive thing in a project's language and the thing nobody reports, because
+each half looks correct from where it is used.
+
+### `DOMAIN.md`
+
+One file at the repo root. Four sections, only the first required:
+
+```markdown
+# Acme — Domain
+
+Order fulfilment for wholesale customers.
+
+## Language
+
+**Shipment**:
+One physical dispatch of goods, from one warehouse, on one day.
+_Avoid_: delivery, parcel, consignment
+_Kinds_: standard | express | pickup
+_Rules_: A Shipment cannot be recalled once dispatched — a returned Shipment
+becomes a Return.
+_See_: [0007](docs/decisions/0007-shipments-own-their-line-items.md), `src/fulfilment/shipment.ts`
+
+## Relationships
+
+- One **Order** produces one or more **Shipments**; a Shipment belongs to exactly
+  one Order and cannot move between them.
+- An **Invoice** covers one or more **Shipments**, which need not be from the
+  same Order.
+
+## Rules
+
+- An Order cannot be cancelled once any of its Shipments has dispatched. The
+  remaining Shipments can be, individually.
+
+## Open questions
+
+- Is a pickup a kind of Shipment, or its own entry?
+```
+
+`_Avoid_` is the line that stops drift — it names the synonyms that must not be
+used, so two halves of a project cannot quietly adopt different words for one
+thing. `_Kinds_` gets its own line because a closed set is the most expensive
+item in the file: it becomes an enum in the schema, a set of values in the API
+and a set of labels in the UI at the same time, and those three have to change
+together — or, outside code, a set of expense categories copied into a filing, a
+spreadsheet and an accounting system. `_See_` is what keeps the model honest — an
+entry with no references is either new or dead, and after a few months the entry
+alone will not tell you which. It points at whatever the project is made of: a
+source file, a scanned certificate, a decision record.
+
+**The project's own words win, including when they are not English.** If the work
+says *Sendung* rather than "shipment" — because the carrier's unit and yours are
+not the same count — that is the entry; translating it for the model's benefit
+creates the second vocabulary this file exists to prevent. Non-English headwords
+are glossed once, on the entry: a short English meaning, plus a reading where the
+script does not supply one. The gloss lives on the entry and nowhere else,
+because a second gloss is a second definition waiting to disagree.
+
+**Growing up:** a single `DOMAIN.md` graduates to a root `DOMAIN-MAP.md` plus
+per-area `DOMAIN.md` files placed next to the material they describe. There is
+exactly one growth path and no third shape — a model split two ways is worse than
+one that is merely long. The trigger is not length alone: graduate when the file
+passes roughly 150 lines *and* its terms fall into clusters that barely reference
+each other.
+
+The map's `## Between areas` section is where the real risk lives — two areas
+sharing a word and meaning different things by it. Two questions settle most of
+it: **who owns the term** (one area owns it, the others reference it) and **which
+side is upstream** — whose changes force the other to react. They are not the
+same question, and the second is the one people skip; ownership says where the
+definition lives, upstream says where a change gets expensive. The map covers
+areas *within* one
+project; vocabulary shared between separate projects is the shared-reference case
+above, not a map stretched across repository boundaries.
+
+### `docs/decisions/`
+
+Sequentially numbered, `0001-slug.md`. A date and one paragraph is a complete
+record:
+
+```markdown
+---
+date: 2024-03-11
+---
+
+# Order totals are stored, not computed from line items
+
+Tax rates and shipping rules change, and an order from two years ago must still
+show the total the customer was actually charged — recomputing it produces a
+different number every time the rules move. The total is written once at
+placement and never recalculated; line items remain the audit trail.
+```
+
+In a codebase this artefact is usually called an **ADR** and lives in
+`docs/adr/`. Same thing, one name here — half the decisions worth recording are
+not architectural (a fiscal year-end, a registered office, a bank, a deliberate
+no), and a project should not have to pick between two directories before it can
+write one down. The most widely used ADR template,
+[MADR](https://adr.github.io/madr/), reached the same conclusion from the other
+direction: at 3.0.0 it renamed itself from *Markdown **Architectural** Decision
+Records* to *Markdown **Any** Decision Records*.
+
+**The date is required.** A decision is an answer to the rules, prices and
+alternatives in force when it was made, and all of those move. *"The exemption
+applies"* is a different claim in 2026 than in 2029. Numbering gives you order;
+only the date gives you the world it was decided in.
+
+A record is offered when **both** hold: **hard to reverse**, and **the result of
+a real trade-off**. Reversible decisions get reversed rather than read, and a
+decision with no alternative reads six months later as though a choice was made
+when none was. **Surprising without context** is deliberately *not* a third
+condition — it decides which record to write first when several qualify, because
+those are the ones people go looking for, but requiring it throws away exactly
+the unglamorous structural decisions that are most expensive to re-litigate.
+"The primary bank is Aozora" surprises nobody and still needs a record.
+
+Deliberate no-s live here too, which is why `shape-it` has no separate
+out-of-scope file. Something considered and dropped needs a record for the same
+reason the yes-s do (on a recurrence test rather than a reversibility one):
+otherwise it gets proposed again every few months and the
+reasoning is reconstructed by someone who was not there. That applies to the
+**surprising** and the **recurring** no-s — routine scope trimming inside one
+piece of work stays in that work's plan.
+
+Decisions are never edited into different decisions. A new record supersedes, and
+the old one gains a `status:` line — the record of the fork is the whole value,
+and rewriting it loses the reason the first answer looked right. This is also why
+a decisions *table* stops working past a dozen rows: a row cannot carry the
+reasoning, cannot be superseded without being overwritten, and cannot be linked
+to from an entry.
+
+---
+
+---
+
+## `domain-adopt` — seeding a model into a project that has none
+
+The vocabulary is already there, scattered through a `CLAUDE.md`, a README, a
+decisions table and forty documents — which is nearly every project older than a
+year. The ordinary discipline grows a model one term at a time; that is right for
+daily use and would take another year here.
+
+**It only runs when you ask for it by name.** That is the point of it being a
+separate skill: it rewrites `CLAUDE.md` and creates files across the project, so
+it has to be the session you wanted rather than a detour inside one — and a skill
+that triggered on "this project has no `DOMAIN.md`" would fire exactly when it is
+least welcome. `domain` keeps the *offer*, at the end of a session with the terms
+in hand; this is what runs if you say yes.
+
+Six steps — **explore → propose → ask → write → align → report** — and **nothing
+is written until step four, nothing renamed at any point**.
+
+The proposal step is what makes it safe. Seeding a file with thirty terms nobody
+reviewed installs thirty definitions, and the wrong ones get copied by every
+session afterwards — so the candidate model is shown whole first, with sources,
+and marked:
+
+```
+📖 Terms — 14 candidates
+  ✅ Member         equity holder in the company; not staff    CLAUDE.md, DECISIONS.md#5
+  ⚠️ Engagement     "a signed contract" in overview.md,
+                    "a piece of work" in operations/           2 sources disagree
+  ❓ Matter         used 9×, defined nowhere
+
+⚖️ Decisions — 6 of DECISIONS.md's 11 rows
+  ✅ 0001  Fiscal year ends in May
+  ✗ rows 3, 8, 9   facts, not decisions → moving to DOMAIN.md
+```
+
+Then it asks — one batched round, conflicts and expensive gaps only, never about
+anything already marked ✅. Everything still ambiguous goes to `## Open questions`
+rather than being resolved on the spot, because an adoption pass that becomes
+forty questions is one that never gets run on the second project.
+
+Converting an existing decisions log is **sorting**, not reformatting: a table
+accumulates rows because a row is cheap, so half of them turn out to be facts
+belonging in `DOMAIN.md`, or to-dos belonging where to-dos live. And vocabulary
+*moves* out of `CLAUDE.md` rather than being copied out — instructions stay, a
+one-line pointer replaces what left, because a summary left behind is a second
+definition and it will be the one that drifts.
+
+### It ends with a list of what the model just made wrong
+
+Writing `DOMAIN.md` does not change the ninety places the material still says
+*project* where the model now says **Block**. Step five enumerates them —
+`docs/domain-alignment.md` — and stops there. **A list, never a diff:** an
+adoption session that ends in a four-hundred-file rename is a diff nobody reviews
+attached to a model nobody agreed to.
+
+Rows are sorted by blast radius rather than by folder, which decides the order
+they get drained in:
+
+| # | Radius | What it costs | Default |
+|---|---|---|---|
+| 0 | prompts, skill files, agent templates | nothing | rename |
+| 1 | comments, task notes, locals, test names | mechanical | rename |
+| 2 | exports, types, filenames, components, i18n keys | one commit per module | rename |
+| 3 | columns, enum values, stored keys, filings | migration | decide |
+| 4 | public API fields, routes, UI copy, printed documents | breaks consumers | leave |
+
+Radius 0 is first because it is free *and* it is the one doing damage — a stale
+`CLAUDE.md` misleads a reader who can push back, a stale prompt writes wrong data
+at scale and says nothing. Radius 4 is opt-in: published output is touched only
+where the entry's `_Avoid_` line says *"in published copy too"*, so an internal
+disambiguation problem never becomes a rewrite of good copy. Every `leave` row
+carries its reason, or the next person re-proposes it.
+
+### A large project is cut into rounds, not stretched into a long pass
+
+Past roughly forty candidate terms the single sitting stops working: the proposal
+outgrows a screen, four questions reach a fifth of the conflicts, and the rest
+land in `## Open questions`, which at that size is a graveyard rather than a
+queue. So the unit becomes **one area per round** — cut first, census once, then
+§1–§4 per area, a reconciliation round that diffs headwords appearing in two
+areas' files, and step five over the whole thing at the end. Every cap in the
+skill — ten to thirty terms, four questions, one screen — is per round.
+
+---
+
+### A complete example
+
+Every section above shows fragments. `domain` ships one small project's model in
+full — a `DOMAIN.md` and one of the decision records it links to — in
+[EXAMPLE.md](skills/domain/EXAMPLE.md). It is a design studio,
+not a codebase, on purpose: the format does not depend on having source files,
+and it is easier to see that when the example has none. About 70 lines covering a
+whole business, which is the size a first model should be.
