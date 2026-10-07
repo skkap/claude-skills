@@ -86,9 +86,6 @@ body {
 .hd-table td.num, .hd-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .hd-img { display: block; max-width: 100%; border-radius: 8px; margin: 0 auto; }
 .hd-missing { display: grid; place-items: center; min-height: 80px; border: 1px dashed var(--line-strong); border-radius: 8px; color: var(--muted); font-size: 12.5px; padding: 10px; text-align: center; }
-.hd-mermaid { display: flex; justify-content: center; overflow: auto; }
-.hd-mermaid svg { max-width: 100%; height: auto; }
-.hd-mermaid.err { justify-content: flex-start; }
 
 /* stat tiles */
 .hd-stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
@@ -181,7 +178,7 @@ body {
 .hd-prev > * { width: 100%; }
 .hd-prev .hd-card { background: transparent; border: 0; padding: 0; }
 .hd-opt.on .hd-prev { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-.hd-body { padding: 10px 14px 12px; }
+.hd-opts.grid .hd-body, .hd-opts.compare .hd-body { padding: 10px 14px 12px; }  /* list rows pad the option itself */
 .hd-opts.grid .hd-opt:not(:has(.hd-prev)) .hd-body, .hd-opts.compare .hd-opt:not(:has(.hd-prev)) .hd-body { padding-top: 12px; }
 .hd-opts.compare .hd-pc { grid-template-columns: 1fr; }
 
@@ -370,3 +367,4 @@ kbd { font: 600 10.5px/1 var(--mono); padding: 2px 5px; border-radius: 4px; bord
 .hd[data-style="terminal"] .hd-btn { border-radius: 4px; font-family: var(--mono); }
 .hd[data-style="terminal"] .hd-rlist { border-radius: 4px; }
 .hd[data-style="terminal"] .hd-chip { border-radius: 3px; font-size: 13px; }
+
