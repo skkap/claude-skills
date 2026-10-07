@@ -1,5 +1,19 @@
 # Changelog
 
+## huddle 1.0.0
+
+### Ask with a page, not a prompt
+
+A new plugin. Inside agterm, `huddle` replaces the built-in question tool with
+a page in an HTML overlay over the agent's own session: options that are
+pictures (diagrams, wireframes, design samples, charts), up to nine choices
+with reasons and trade-offs, a free-text box on every question, sliders with a
+live preview for values that are a matter of taste, several questions with a
+review before sending, and keys throughout. The agent writes a JSON spec — or
+one `huddle q` line — and reads the answer back as JSON; ten templates and five
+larger demos ship with it. Needs agterm 0.34 or later and Python 3; outside
+agterm the page opens in the browser.
+
 ## shape-it 1.7.0
 
 ### The planners name no tracker
