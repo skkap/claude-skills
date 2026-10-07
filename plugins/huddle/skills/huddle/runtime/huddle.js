@@ -451,7 +451,7 @@
   }
   const differs = (vals, ref) => Object.keys(ref).some((k) => vals[k] !== ref[k]);
   const preset = (q) => q.from && q.options.find((o) => o.id === q.from);
-  const presetKept = (q) => !!preset(q) && !differs(q.values, preset(q).values || {});
+  const presetKept = (q) => !!preset(q) && !differs(q.values, Object.assign({}, q.initial, preset(q).values));
   const tuned = (q) => differs(q.values, q.initial);
   function tuneSummary(q) {
     return (presetKept(q) ? `<span class="hd-chip">${inline(q.options.find((o) => o.id === q.from).label)}</span>` : "")
@@ -609,6 +609,8 @@
     const replay = $("button", "hd-replay", "⟳ replay"); replay.type = "button"; replay.title = "Replay the preview (r)";
     replay.onclick = () => q.draw(); stage.appendChild(replay);
     const initial = q.initial = Object.assign({}, q.values);
+    const dflt = q.options.find((o) => o.default || o.selected);
+    if (dflt) { q.from = dflt.id; Object.assign(q.values, dflt.values || {}); }
     q.draw = () => {
       panes.forEach((p) => {
         const vals = p.live ? q.values : initial, saved = q.values; q.values = vals;

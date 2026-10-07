@@ -21,6 +21,7 @@ Environment: AGTERMCTL (path to agtermctl), HUDDLE_CONFIG (personal defaults, de
 import argparse
 import base64
 import glob
+import http.client
 import http.server
 import json
 import mimetypes
@@ -134,7 +135,7 @@ def mermaid_js():
         with open(MERMAID_FILE, "w", encoding="utf-8") as f:
             f.write(data)
         return data
-    except (OSError, UnicodeDecodeError) as e:  # diagrams fall back to their source text
+    except (OSError, UnicodeDecodeError, http.client.HTTPException) as e:  # diagrams fall back to their source text
         print(f"huddle: mermaid unavailable ({e}); diagrams show as source", file=sys.stderr)
         return ""
 
@@ -304,8 +305,11 @@ def wait_page(page_id, timeout, status=True):
 
 # ---------- browser fallback ----------
 
+RELOAD_GRACE = 3  # seconds a dismissal waits for the page to come back (a reload also unloads it)
+
+
 def ask_in_browser(html, timeout):
-    answer = {}
+    state = {"answer": None, "dismissed_at": None}
     done = threading.Event()
 
     class H(http.server.BaseHTTPRequestHandler):
@@ -313,6 +317,7 @@ def ask_in_browser(html, timeout):
             pass
 
         def do_GET(self):
+            state["dismissed_at"] = None  # the page is back: that unload was a reload
             body = html.encode()
             self.send_response(200)
             self.send_header("content-type", "text/html; charset=utf-8")
@@ -323,12 +328,16 @@ def ask_in_browser(html, timeout):
         def do_POST(self):
             n = int(self.headers.get("content-length", 0))
             try:
-                answer.update(json.loads(self.rfile.read(n)))
+                body = json.loads(self.rfile.read(n))
             except json.JSONDecodeError:
-                pass
+                body = {}
             self.send_response(204)
             self.end_headers()
-            done.set()
+            if body.get("status") == "dismissed":
+                state["dismissed_at"] = time.time()
+            else:
+                state["answer"] = body
+                done.set()
 
     srv = socketserver.TCPServer(("127.0.0.1", 0), H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -337,13 +346,20 @@ def ask_in_browser(html, timeout):
         srv.shutdown()
         die("not inside agterm and no browser could be opened", 3)
     print(f"huddle: opened {url}", file=sys.stderr)
-    ok = done.wait(timeout)
+    deadline = time.time() + timeout
+    while not done.wait(0.25):
+        gone = state["dismissed_at"]
+        if gone and time.time() - gone > RELOAD_GRACE:
+            srv.shutdown()
+            print(json.dumps({"status": "dismissed"}))
+            return 2
+        if time.time() > deadline:  # the server is gone with this process, so it cannot be resumed
+            srv.shutdown()
+            print(json.dumps({"status": "timeout", "hint": "browser questions cannot be resumed; ask again with a longer --timeout"}))
+            return 4
     srv.shutdown()
-    if not ok:  # the server is gone with this process, so a browser question cannot be resumed
-        print(json.dumps({"status": "timeout", "hint": "browser questions cannot be resumed; ask again with a longer --timeout"}))
-        return 4
-    print(json.dumps(answer, ensure_ascii=False, indent=1))
-    return 2 if answer.get("status") == "dismissed" else 0
+    print(json.dumps(state["answer"], ensure_ascii=False, indent=1))
+    return 0
 
 
 # ---------- commands ----------
