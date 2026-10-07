@@ -21,10 +21,10 @@ not designed.
 
 Four things it does differently:
 
-**The answer can be a picture.** An option can carry a preview — a mermaid
-diagram, a wireframe, a radius, spacing or colour sample, a chart — and the
-evidence goes under the question: diagrams, charts, stat tiles, tables, code,
-diffs.
+**The answer can be a picture.** An option can carry a preview — an SVG diagram,
+a wireframe, a radius, spacing or colour sample, a chart — and the evidence goes
+under the question: diagrams, charts, stat tiles, tables, code, diffs. Nothing is
+fetched from the network; a diagram is plain SVG the agent writes.
 
 ![Options that are diagrams](../../docs/huddle/architecture.png)
 

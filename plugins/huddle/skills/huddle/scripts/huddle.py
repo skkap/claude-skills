@@ -21,7 +21,6 @@ Environment: AGTERMCTL (path to agtermctl), HUDDLE_CONFIG (personal defaults, de
 import argparse
 import base64
 import glob
-import http.client
 import http.server
 import json
 import mimetypes
@@ -33,19 +32,15 @@ import subprocess
 import sys
 import threading
 import time
-import urllib.request
 import webbrowser
 
 HERE = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 RUNTIME = os.path.join(HERE, "runtime")
 TEMPLATES = os.path.join(HERE, "templates")
 DEMOS = os.path.join(HERE, "demos")
-CACHE = os.path.expanduser("~/.cache/huddle")
 DEFAULTS = os.path.join(HERE, "defaults.json")
 USER_DEFAULTS = os.path.expanduser(os.environ.get("HUDDLE_CONFIG", "~/.config/huddle/defaults.json"))
 OUTDIR = os.path.join(os.environ.get("TMPDIR", "/tmp"), "huddle")
-MERMAID_URL = "https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"
-MERMAID_FILE = os.path.join(CACHE, "mermaid-11.12.0.min.js")
 MAX_IMAGE = 8 * 1024 * 1024
 
 
@@ -90,6 +85,8 @@ def check_spec(spec):
             die(f"question {qid!r} has duplicate option ids (an option without an id is o1, o2, … by position)")
         if not q.get("prompt") and not spec.get("title"):
             die(f"question {qid!r} has no prompt")
+    if find_key(spec, "mermaid"):
+        die("`mermaid` blocks are not supported: draw the diagram as an inline `svg` block (see SKILL.md, Diagrams)")
 
 
 def embed_images(node, base):
@@ -116,28 +113,12 @@ def embed_images(node, base):
             embed_images(v, base)
 
 
-def uses_mermaid(node):
+def find_key(node, key):
     if isinstance(node, dict):
-        return "mermaid" in node or any(uses_mermaid(v) for v in node.values())
+        return key in node or any(find_key(v, key) for v in node.values())
     if isinstance(node, list):
-        return any(uses_mermaid(v) for v in node)
+        return any(find_key(v, key) for v in node)
     return False
-
-
-def mermaid_js():
-    if os.path.isfile(MERMAID_FILE) and os.path.getsize(MERMAID_FILE) > 100_000:
-        with open(MERMAID_FILE, encoding="utf-8") as f:
-            return f.read()
-    try:
-        os.makedirs(CACHE, exist_ok=True)
-        with urllib.request.urlopen(MERMAID_URL, timeout=20) as r:
-            data = r.read().decode("utf-8")
-        with open(MERMAID_FILE, "w", encoding="utf-8") as f:
-            f.write(data)
-        return data
-    except (OSError, UnicodeDecodeError, http.client.HTTPException) as e:  # diagrams fall back to their source text
-        print(f"huddle: mermaid unavailable ({e}); diagrams show as source", file=sys.stderr)
-        return ""
 
 
 def build_html(spec, base):
@@ -146,7 +127,6 @@ def build_html(spec, base):
         with open(os.path.join(RUNTIME, name), encoding="utf-8") as f:
             return f.read()
     css, js = read("huddle.css"), read("huddle.js")
-    mm = mermaid_js() if uses_mermaid(spec) else ""
     data = json.dumps(spec, ensure_ascii=False).replace("</", "<\\/").replace("<!--", "<\\u0021--")
     title = spec.get("title") or (spec.get("questions") or [spec])[0].get("prompt") or "Question"
     esc = lambda s: str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -155,7 +135,6 @@ def build_html(spec, base):
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
         f"<title>{esc(title)[:120]}</title><style>{css}</style></head>"
         f"<body><div id=\"app\"></div><script type=\"application/json\" id=\"hd-spec\">{data}</script>"
-        + (f"<script>{mm}</script>" if mm else "")
         + f"<script>{js}</script></body></html>"
     )
 
@@ -200,7 +179,7 @@ def auto_size(spec):
     """Pick the floating-panel percent from how much the page has to show."""
     qs = spec.get("questions") or [spec]
     blob = json.dumps(spec)
-    visual = any(k in blob for k in ('"preview"', '"mermaid"', '"chart"', '"image"', '"stats"', '"table"'))
+    visual = any(k in blob for k in ('"preview"', '"svg"', '"chart"', '"image"', '"stats"', '"table"'))
     compare = any(q.get("layout") == "compare" for q in qs)
     nopts = max((len(q.get("options") or []) for q in qs), default=0)
     if visual or compare or len(qs) > 2:
