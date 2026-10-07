@@ -71,7 +71,7 @@
   const fmt = (v, unit) => {
     if (typeof v !== "number") return esc(v);
     const a = Math.abs(v), s = a >= 1e6 ? (v / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M" : a >= 1e4 ? (v / 1e3).toFixed(a >= 1e5 ? 0 : 1) + "k" : (Math.round(v * 100) / 100).toLocaleString();
-    return s + (unit || "");
+    return esc(s + (unit || ""));
   };
   function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
 
@@ -81,6 +81,7 @@
     const series = c.series || (c.values ? [{ name: c.name || "", values: c.values }] : []);
     const labels = c.labels || (series[0] ? series[0].values.map((_, i) => String(i + 1)) : []);
     const colorOf = (i) => (series[i] && series[i].color) || cols[i % cols.length];
+    const isHl = (i) => c.highlight != null && (i === c.highlight || labels[i] === c.highlight);
     if (c.title) wrap.appendChild($("div", "hd-btitle", esc(c.title)));
     let svg = "";
     if (type === "donut" || type === "pie") {
@@ -105,7 +106,7 @@
     if (type === "hbar") {
       const vals = series[0].values, max = c.max || niceMax(Math.max(...vals)), rowH = 26, labW = c.labelWidth || 120, W = 560, H = vals.length * rowH + 4;
       vals.forEach((v, i) => {
-        const y = i * rowH + 3, w = Math.max(1, (v / max) * (W - labW - 60)), col = (c.highlight != null ? (i === c.highlight || labels[i] === c.highlight ? colorOf(0) : css("--line-strong")) : colorOf(0));
+        const y = i * rowH + 3, w = Math.max(1, (v / max) * (W - labW - 60)), col = c.highlight == null || isHl(i) ? colorOf(0) : css("--line-strong");
         svg += `<text x="${labW - 8}" y="${y + 15}" text-anchor="end">${esc(labels[i])}</text><rect x="${labW}" y="${y + 3}" width="${w}" height="${rowH - 9}" rx="3" fill="${col}"><title>${esc(labels[i])}: ${fmt(v, unit)}</title></rect><text class="vl" x="${labW + w + 6}" y="${y + 15}">${fmt(v, unit)}</text>`;
       });
       wrap.insertAdjacentHTML("beforeend", `<svg viewBox="0 0 ${W} ${H}">${svg}</svg>`); return wrap;
@@ -121,7 +122,7 @@
       const g = series.length, bw = Math.min(42, (step * 0.72) / g);
       series.forEach((s, si) => s.values.forEach((v, i) => {
         const x = L + step * i + (step - bw * g) / 2 + si * bw, y = yOf(Math.max(v, 0)), h = Math.abs(yOf(v) - yOf(0));
-        svg += `<rect x="${x + 1}" y="${y}" width="${bw - 2}" height="${Math.max(1, h)}" rx="3" fill="${colorOf(si)}"><title>${esc(s.name ? s.name + " · " : "")}${esc(labels[i])}: ${fmt(v, unit)}</title></rect>`;
+        svg += `<rect x="${x + 1}" y="${y}" width="${bw - 2}" height="${Math.max(1, h)}" rx="3" fill="${c.highlight == null || g > 1 || isHl(i) ? colorOf(si) : css("--line-strong")}"><title>${esc(s.name ? s.name + " · " : "")}${esc(labels[i])}: ${fmt(v, unit)}</title></rect>`;
         if (c.values_on_bars !== false && g === 1 && n <= 16) svg += `<text class="vl" x="${x + bw / 2}" y="${y - 4}" text-anchor="middle">${fmt(v, unit)}</text>`;
       }));
     } else {
@@ -132,6 +133,12 @@
         pts.forEach((p, i) => (svg += `<circle cx="${p[0]}" cy="${p[1]}" r="${n > 30 ? 0 : 3}" fill="${col}"><title>${esc(s.name ? s.name + " · " : "")}${esc(labels[i])}: ${fmt(s.values[i], unit)}</title></circle>`));
       });
     }
+    if (type !== "bar" && c.highlight != null) labels.forEach((lb, i) => {
+      if (!isHl(i)) return;
+      const x = L + step * i + step / 2;
+      svg += `<line x1="${x}" x2="${x}" y1="${T}" y2="${T + ph}" stroke="${css("--line-strong")}" stroke-dasharray="3 3"/>`;
+      series.forEach((s2, si) => (svg += `<circle cx="${x}" cy="${yOf(s2.values[i])}" r="5" fill="${colorOf(si)}" stroke="var(--bg)" stroke-width="2"/>`));
+    });
     (c.marks || []).forEach((m) => { const y = yOf(m.value); svg += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="${css("--bad")}" stroke-dasharray="4 3"/><text x="${W - R}" y="${y - 4}" text-anchor="end" style="fill:${css("--bad")}">${esc(m.label || "")}</text>`; });
     svg += `<line class="axis" x1="${L}" x2="${W - R}" y1="${yOf(Math.max(min, 0))}" y2="${yOf(Math.max(min, 0))}"/>`;
     wrap.insertAdjacentHTML("beforeend", `<svg viewBox="0 0 ${W} ${H}">${svg}</svg>`);
@@ -156,14 +163,15 @@
     else if (b.mermaid != null) {
       el = $("div", "hd-mermaid"); el.dataset.src = b.mermaid; el.id = "hd-mm-" + mermaidN++;
       el.appendChild($("pre", "hd-code", esc(b.mermaid))); pendingMermaid.push(el);
-    } else if (b.chart) el = chart(b.chart);
+    } else if (b.chart) el = chart(b.title && !b.chart.title ? Object.assign({}, b.chart, { title: b.title }) : b.chart);
     else if (b.stats) {
       el = $("div", "hd-stats");
       b.stats.forEach((s) => {
         const dir = s.good === true ? "good" : s.good === false ? "bad" : "flat";
         el.insertAdjacentHTML("beforeend", `<div class="hd-stat"><div class="l">${esc(s.label)}</div><div class="v">${esc(s.value)}</div>${s.delta ? `<div class="d ${dir}">${esc(s.delta)}</div>` : ""}${s.sub ? `<div class="l">${esc(s.sub)}</div>` : ""}</div>`);
       });
-    } else if (b.image) {
+    } else if (b.image === "") el = $("div", "hd-missing", esc(b.alt || "image missing"));
+    else if (b.image) {
       el = $("div");
       const img = $("img", "hd-img"); img.src = b.image; img.alt = b.alt || "";
       if (b.height) { img.style.height = b.height + "px"; img.style.objectFit = b.fit || "contain"; img.style.width = "100%"; }
@@ -207,9 +215,23 @@
   }
   function blocks(list) { const d = $("div", "hd-blocks"); (Array.isArray(list) ? list : [list]).forEach((b) => d.appendChild(block(b))); return d; }
 
-  async function renderMermaid() {
-    if (!pendingMermaid.length) return;
-    if (!window.mermaid) { pendingMermaid.forEach((el) => el.classList.add("err")); return; }
+  // block() queues js and mermaid work; flush() runs whatever is queued. A controls preview is rebuilt on
+  // every change, so it flushes after each redraw, not only once at startup.
+  let ready = false, mermaidReady = false, mermaidChain = Promise.resolve();
+  function flush() {
+    blockJS.splice(0).forEach(([el, code]) => { try { new Function("el", "api", code)(el, api); } catch (e) { el.appendChild($("pre", "hd-err", "js: " + esc(e.message || e))); } });
+    const els = pendingMermaid.splice(0);
+    if (els.length) mermaidChain = mermaidChain.then(() => renderMermaid(els));
+  }
+  async function renderMermaid(els) {
+    if (!window.mermaid) { els.forEach((el) => el.classList.add("err")); return; }
+    if (!mermaidReady) { mermaidReady = true; initMermaid(); }
+    for (const el of els) {
+      try { const { svg } = await window.mermaid.render(el.id + "-svg", el.dataset.src); el.innerHTML = svg; }
+      catch (e) { el.classList.add("err"); el.appendChild($("div", "hd-err", "mermaid: " + esc(e.message || e))); }
+    }
+  }
+  function initMermaid() {
     const fg = css("--fg"), bg = getComputedStyle(document.body).backgroundColor, acc = css("--accent");
     const dark = rgbOf(bg).reduce((a, b) => a + b, 0) < 384, hex = (c) => mix(c, c, 1);
     try {
@@ -218,10 +240,6 @@
           lineColor: mix(fg, bg, 0.5), textColor: hex(fg), secondaryColor: mix(css("--ok"), bg, 0.16), tertiaryColor: mix(fg, bg, 0.06), clusterBkg: mix(fg, bg, 0.04), clusterBorder: mix(fg, bg, 0.22),
           edgeLabelBackground: hex(bg), noteBkgColor: mix(css("--warn"), bg, 0.15), noteTextColor: hex(fg), actorBkg: mix(acc, bg, 0.16), actorBorder: mix(acc, bg, 0.75), actorTextColor: hex(fg), signalColor: hex(fg), signalTextColor: hex(fg), fontSize: "14px" } });
     } catch (e) { /* initialize is best effort */ }
-    for (const el of pendingMermaid) {
-      try { const { svg } = await window.mermaid.render(el.id + "-svg", el.dataset.src); el.innerHTML = svg; }
-      catch (e) { el.classList.add("err"); el.appendChild($("div", "hd-err", "mermaid: " + esc(e.message || e))); }
-    }
   }
 
   // ---------- questions ----------
@@ -232,8 +250,9 @@
     controls: (q.controls || []).map((c) => Object.assign({ type: "range" }, c)),
     values: {}, from: null,
     options: (q.options || []).map((o, i) => (typeof o === "string" ? { id: o, label: o } : Object.assign({ id: o.id || "o" + (i + 1) }, o))),
-    sel: new Set(), hl: 0, el: null, ta: null, optEls: [], touched: false,
+    sel: new Set(), hl: 0, el: null, ta: null, optEls: [],
   }));
+  if (!qs.length) { document.getElementById("app").innerHTML = '<pre class="hd-err">huddle: the spec has no questions</pre>'; return; }
   qs.forEach((q) => q.options.forEach((o, i) => { if (o.default || o.selected) q.sel.add(i); }));
   let cur = 0, finished = false, reviewing = false, showHelp = false;
 
@@ -378,7 +397,7 @@
       if (q.tab) {
         const { sel, txt } = summary(q);
         q.tab.classList.toggle("cur", qi === cur && !reviewing); q.tab.classList.toggle("done", valid(q) && (sel.length || txt));
-        q.tab.querySelector(".a").textContent = q.mode === "tune" ? (sel.length ? sel.join(", ") : q.touched ? "custom" : "") + (txt ? " + note" : "")
+        q.tab.querySelector(".a").textContent = q.mode === "tune" ? (sel.length ? sel.join(", ") : tuned(q) ? "custom" : "") + (txt ? " + note" : "")
           : sel.length ? sel.join(", ") + (txt ? " + note" : "") : txt ? "note" : "";
       }
     });
@@ -387,11 +406,11 @@
     backBtn.hidden = !reviewing;
     const last = cur === qs.length - 1, q = qs[cur];
     if (reviewing) {
-      submitBtn.innerHTML = (SPEC.submitLabel || "Send answers") + " <kbd>⏎</kbd>"; submitBtn.disabled = false;
+      submitBtn.innerHTML = esc(SPEC.submitLabel || "Send answers") + " <kbd>⏎</kbd>"; submitBtn.disabled = false;
       keys.innerHTML = `<span><kbd>⏎</kbd> send</span><span><kbd>1</kbd>–<kbd>${Math.min(qs.length, 9)}</kbd> edit an answer</span><span><kbd>Esc</kbd> back</span>`;
       return;
     }
-    submitBtn.innerHTML = (last ? (willReview() ? "Review" : SPEC.submitLabel || "Submit") : "Next") + " <kbd>⏎</kbd>";
+    submitBtn.innerHTML = esc(last ? (willReview() ? "Review" : SPEC.submitLabel || "Submit") : "Next") + " <kbd>⏎</kbd>";
     submitBtn.disabled = !valid(q);
     const n = Math.min(q.options.length, 9), list = n && q.optEls[0].parentElement.classList.contains("list");
     const full = [
@@ -430,8 +449,12 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     refresh(); window.scrollTo({ top: 0 });
   }
+  const differs = (vals, ref) => Object.keys(ref).some((k) => vals[k] !== ref[k]);
+  const preset = (q) => q.from && q.options.find((o) => o.id === q.from);
+  const presetKept = (q) => !!preset(q) && !differs(q.values, preset(q).values || {});
+  const tuned = (q) => differs(q.values, q.initial);
   function tuneSummary(q) {
-    return (q.from && !q.touched ? `<span class="hd-chip">${inline(q.options.find((o) => o.id === q.from).label)}</span>` : "")
+    return (presetKept(q) ? `<span class="hd-chip">${inline(q.options.find((o) => o.id === q.from).label)}</span>` : "")
       + q.controls.map((c) => `<span class="hd-chip val"><span>${esc(c.label || c.id)}</span> ${esc(showVal(c, q.values[c.id]))}</span>`).join("")
       + (q.live ? `<div class="hd-rthumbs"><div class="hd-rthumb wide">${q.live.outerHTML}</div></div>` : "");
   }
@@ -462,8 +485,8 @@
       if (api.extra[x.id] !== undefined) a.extra = api.extra[x.id];
       if (x.mode === "tune") {
         a.values = Object.assign({}, x.values);
-        a.selected = x.from && !x.touched ? [x.from] : []; a.labels = a.selected.map((id) => x.options.find((o) => o.id === id).label);
-        if (x.from && x.touched) a.from = x.from;
+        a.selected = presetKept(x) ? [x.from] : []; a.labels = a.selected.map((id) => preset(x).label);
+        if (x.from && !presetKept(x)) a.from = x.from;
       }
       answers[x.id] = a;
     });
@@ -585,20 +608,23 @@
     else mkPane("", true);
     const replay = $("button", "hd-replay", "⟳ replay"); replay.type = "button"; replay.title = "Replay the preview (r)";
     replay.onclick = () => q.draw(); stage.appendChild(replay);
-    const initial = Object.assign({}, q.values);
-    q.draw = () => panes.forEach((p) => {
-      const vals = p.live ? q.values : initial, saved = q.values; q.values = vals;
-      p.body.innerHTML = ""; p.body.appendChild(block(fill(s.preview, q)));
-      q.controls.forEach((c) => p.body.style.setProperty("--" + c.id, cssVal(c, vals[c.id])));
-      q.values = saved; if (p.live) q.live = p.body;
-    });
+    const initial = q.initial = Object.assign({}, q.values);
+    q.draw = () => {
+      panes.forEach((p) => {
+        const vals = p.live ? q.values : initial, saved = q.values; q.values = vals;
+        p.body.innerHTML = ""; p.body.appendChild(block(fill(s.preview, q)));
+        q.controls.forEach((c) => p.body.style.setProperty("--" + c.id, cssVal(c, vals[c.id])));
+        q.values = saved; if (p.live) q.live = p.body;
+      });
+      if (ready) flush();
+    };
     const outs = {};
     q.controls.forEach((c) => {
       const row = $("div", "hd-ctl " + c.type), head = $("div", "hd-ctl-h");
       head.appendChild($("span", "hd-ctl-l", esc(c.label || c.id)));
       const out = $("span", "hd-ctl-v"); head.appendChild(out); outs[c.id] = out;
       const reset = $("button", "hd-ctl-r", "↺"); reset.type = "button"; reset.title = "Back to " + showVal(c, initial[c.id]);
-      reset.onclick = () => set(c, initial[c.id], true); head.appendChild(reset);
+      reset.onclick = () => set(c, initial[c.id]); head.appendChild(reset);
       row.appendChild(head);
       let input;
       if (c.type === "select") {
@@ -612,9 +638,9 @@
       }
       row.appendChild(input); c.el = input; panel.appendChild(row);
     });
-    function set(c, v, fromReset) {
-      q.values[c.id] = v; q.touched = !fromReset || Object.keys(initial).some((k) => q.values[k] !== initial[k]);
-      if (q.from) { const o = q.options.find((x) => x.id === q.from); if (o && o.values && Object.keys(o.values).some((k) => o.values[k] !== q.values[k])) { q.sel.clear(); } }
+    function set(c, v) {
+      q.values[c.id] = v;
+      if (q.from) q.sel = presetKept(q) ? new Set([q.options.indexOf(preset(q))]) : new Set();
       q.syncControls(); q.draw(); refresh();
     }
     q.syncControls = () => q.controls.forEach((c) => {
@@ -644,8 +670,9 @@
   refresh();
   if (qs[0].mode === "text" && qs[0].ta) qs[0].ta.focus();
   qs.forEach((q) => q.ta && autosize(q.ta));
-  blockJS.forEach(([el, code]) => { try { new Function("el", "api", code)(el, api); } catch (e) { el.appendChild($("pre", "hd-err", "js: " + esc(e.message || e))); } });
+  ready = true; flush();
   if (SPEC.script) { try { new Function("api", SPEC.script)(api); } catch (e) { app.appendChild($("pre", "hd-err", "script: " + esc(e.message || e))); } }
-  renderMermaid();
+  if (!window.agterm && location.protocol.startsWith("http"))
+    window.addEventListener("pagehide", () => { if (!finished) navigator.sendBeacon("/answer", JSON.stringify({ status: "dismissed" })); });
   window.focus();
 })();

@@ -14,6 +14,9 @@ local-browser fallback), --no-status (leave the sidebar glyph alone).
 
 Exit codes: 0 answered or "chat" (user wants to discuss in the terminal), 2 dismissed (closed
 unanswered), 3 no way to show it, 4 still pending after --timeout (run `huddle wait ID`), 1 error.
+
+Environment: AGTERMCTL (path to agtermctl), HUDDLE_CONFIG (personal defaults, default
+~/.config/huddle/defaults.json), HUDDLE_NO_BROWSER=1 (outside agterm, exit 3 instead of opening a browser).
 """
 import argparse
 import base64
@@ -27,7 +30,6 @@ import shutil
 import socketserver
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import urllib.request
@@ -39,11 +41,10 @@ TEMPLATES = os.path.join(HERE, "templates")
 DEMOS = os.path.join(HERE, "demos")
 CACHE = os.path.expanduser("~/.cache/huddle")
 DEFAULTS = os.path.join(HERE, "defaults.json")
+USER_DEFAULTS = os.path.expanduser(os.environ.get("HUDDLE_CONFIG", "~/.config/huddle/defaults.json"))
 OUTDIR = os.path.join(os.environ.get("TMPDIR", "/tmp"), "huddle")
 MERMAID_URL = "https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"
 MERMAID_FILE = os.path.join(CACHE, "mermaid-11.12.0.min.js")
-ASKING = ["blocked", "--blink", "--color", "#f59e0b", "--shape", "triangle"]  # agent-lights "asking"
-WORKING = ["active", "--blink", "--color", "#3b82f6"]                         # agent-lights "working"
 MAX_IMAGE = 8 * 1024 * 1024
 
 
@@ -69,9 +70,11 @@ def load_spec(arg):
 
 
 def check_spec(spec):
-    qs = spec.get("questions") or [spec]
+    if not isinstance(spec, dict):
+        die("spec must be a JSON object")
+    qs = spec.get("questions", [spec])
     if not isinstance(qs, list) or not qs:
-        die("spec needs `questions` (a list) or top-level question fields")
+        die("`questions` must be a non-empty list")
     ids = set()
     for i, q in enumerate(qs):
         qid = q.get("id") or (f"q{i + 1}" if spec.get("questions") else "answer")
@@ -81,9 +84,9 @@ def check_spec(spec):
         opts = q.get("options") or []
         if len(opts) > 9:
             die(f"question {qid!r} has {len(opts)} options; keys 1-9 cover at most 9 (aim for 6)")
-        oids = [o if isinstance(o, str) else o.get("id") for o in opts]
-        if len([x for x in oids if x]) != len(set(x for x in oids if x)):
-            die(f"question {qid!r} has duplicate option ids")
+        oids = [o if isinstance(o, str) else o.get("id") or f"o{j + 1}" for j, o in enumerate(opts)]  # as the runtime assigns them
+        if len(oids) != len(set(oids)):
+            die(f"question {qid!r} has duplicate option ids (an option without an id is o1, o2, … by position)")
         if not q.get("prompt") and not spec.get("title"):
             die(f"question {qid!r} has no prompt")
 
@@ -131,7 +134,7 @@ def mermaid_js():
         with open(MERMAID_FILE, "w", encoding="utf-8") as f:
             f.write(data)
         return data
-    except Exception as e:  # diagrams fall back to their source text
+    except (OSError, UnicodeDecodeError) as e:  # diagrams fall back to their source text
         print(f"huddle: mermaid unavailable ({e}); diagrams show as source", file=sys.stderr)
         return ""
 
@@ -172,11 +175,17 @@ def write_page(html):
 
 
 def defaults():
-    try:
-        with open(DEFAULTS, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {}
+    """The skill's neutral defaults.json, overlaid by the user's own file (HUDDLE_CONFIG)."""
+    merged = {}
+    for path in (DEFAULTS, USER_DEFAULTS):
+        try:
+            with open(path, encoding="utf-8") as f:
+                merged.update(json.load(f))
+        except FileNotFoundError:
+            pass
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"huddle: ignoring {path}: {e}", file=sys.stderr)
+    return merged
 
 
 def apply_defaults(spec):
@@ -203,7 +212,8 @@ def auto_size(spec):
 # ---------- agterm ----------
 
 def agtermctl():
-    return shutil.which("agtermctl") or next((p for p in ("/opt/homebrew/bin/agtermctl", "/Applications/agterm.app/Contents/MacOS/agtermctl") if os.path.exists(p)), None)
+    return (os.environ.get("AGTERMCTL") or shutil.which("agtermctl")
+            or next((p for p in ("/opt/homebrew/bin/agtermctl", "/Applications/agterm.app/Contents/MacOS/agtermctl") if os.path.exists(p)), None))
 
 
 def ctl(*args, check=True):
@@ -211,7 +221,7 @@ def ctl(*args, check=True):
     cmd = [exe, *args]
     if os.environ.get("AGTERM_SOCKET"):
         cmd += ["--socket", os.environ["AGTERM_SOCKET"]]
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if check and r.returncode not in (0, 2):
         raise RuntimeError((r.stderr or r.stdout).strip() or f"agtermctl exited {r.returncode}")
     return r
@@ -226,8 +236,8 @@ def set_status(args):
     extra = ["--pane-id", pid] if pid else []
     try:
         ctl("session", "status", *args, "--target", sid, *extra, check=False)
-    except Exception:
-        pass
+    except OSError as e:  # the glyph is a courtesy; never fail the question over it
+        print(f"huddle: could not set the status glyph: {e}", file=sys.stderr)
 
 
 def open_overlay(path, a, spec):
@@ -256,8 +266,9 @@ def open_overlay(path, a, spec):
 
 def wait_page(page_id, timeout, status=True):
     deadline = time.time() + timeout
+    glyphs = defaults().get("status", {})
     if status:
-        set_status(ASKING)
+        set_status(glyphs.get("asking", ["blocked"]))
     still_open = False
     try:
         while True:
@@ -288,7 +299,7 @@ def wait_page(page_id, timeout, status=True):
             time.sleep(0.4)
     finally:
         if status and not still_open:
-            set_status(WORKING)
+            set_status(glyphs.get("answered", ["active"]))
 
 
 # ---------- browser fallback ----------
@@ -322,15 +333,17 @@ def ask_in_browser(html, timeout):
     srv = socketserver.TCPServer(("127.0.0.1", 0), H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     url = f"http://127.0.0.1:{srv.server_address[1]}/"
+    if not webbrowser.open(url):
+        srv.shutdown()
+        die("not inside agterm and no browser could be opened", 3)
     print(f"huddle: opened {url}", file=sys.stderr)
-    webbrowser.open(url)
     ok = done.wait(timeout)
     srv.shutdown()
-    if not ok:
-        print(json.dumps({"status": "timeout", "url": url}))
+    if not ok:  # the server is gone with this process, so a browser question cannot be resumed
+        print(json.dumps({"status": "timeout", "hint": "browser questions cannot be resumed; ask again with a longer --timeout"}))
         return 4
     print(json.dumps(answer, ensure_ascii=False, indent=1))
-    return 0
+    return 2 if answer.get("status") == "dismissed" else 0
 
 
 # ---------- commands ----------
@@ -346,6 +359,8 @@ def ask(spec, a, base):
     if a.browser or not in_agterm():
         if not a.browser and os.environ.get("HUDDLE_NO_BROWSER"):
             die("not inside agterm and HUDDLE_NO_BROWSER is set", 3)
+        if a.no_wait:
+            die("--no-wait needs agterm: the browser fallback answers only while this process runs")
         return ask_in_browser(html, a.timeout)
     path = write_page(html)
     page = open_overlay(path, a, spec)
@@ -385,7 +400,7 @@ def list_dir(d):
             with open(p, encoding="utf-8") as f:
                 s = json.load(f)
             rows.append((os.path.basename(p)[:-5], s.get("_about", "")))
-        except Exception as e:
+        except (OSError, json.JSONDecodeError) as e:
             rows.append((os.path.basename(p)[:-5], f"(unreadable: {e})"))
     return rows
 

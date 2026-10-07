@@ -10,7 +10,7 @@ JSON. The runtime (layout, styles, charts, diagrams, sliders, keyboard) is prebu
 question.
 
 ```bash
-H=~/.claude/skills/huddle/scripts/huddle
+H="${CLAUDE_SKILL_DIR}/scripts/huddle.py"   # the scripts/huddle.py beside this file
 ```
 
 Run it with the Bash tool's `timeout: 600000`. It waits up to 570 s, then exits 4 with the page still open
@@ -92,7 +92,8 @@ Combine them: options to pick a direction, then a `controls` question to fine-tu
   through in the terminal. Stop and ask there; do not pick for them.
 - Exit 2 `status: "dismissed"`: closed unanswered (⌘W). Treat as "not now": don't re-open the same
   question in a loop; say what you need in the terminal.
-- Exit 3: not inside agterm and no browser fallback — use AskUserQuestion.
+- Exit 3: no way to show it (outside agterm with `HUDDLE_NO_BROWSER=1`, or no browser opened) — use
+  AskUserQuestion.
 
 ## Spec reference
 
@@ -158,9 +159,9 @@ Used in `context`, `body`, `detail`, `preview`. A plain string is markdown (`**b
 | --- | --- |
 | markdown | `"text"` or `{"md": "text"}` |
 | diagram | `{"mermaid": "flowchart LR\n A --> B"}` — any mermaid type (flowchart, sequence, class, state, ER, gantt, gitGraph). In labels avoid `#` (starts an entity: `#1` truncates the line) and `%` (comment marker in gantt); add `todayMarker off` to a gantt |
-| chart | `{"chart": {"type": "bar"\|"line"\|"area"\|"hbar"\|"donut"\|"pie", "labels": [...], "series": [{"name", "values"}], "unit": " ms", "marks": [{"value", "label"}], "highlight": 0}}` — `values` alone for one series |
+| chart | `{"chart": {"type": "bar"\|"line"\|"area"\|"hbar"\|"donut"\|"pie", "labels": [...], "series": [{"name", "values", "color"}], "unit": " ms"}}` — `values` alone for one series. Optional: `title`, `highlight` (index or label; not donut/pie), `marks: [{"value", "label"}]` (threshold lines), `min`, `max`, `height`; donut/pie `colors`, `center`, `size`; hbar `labelWidth` |
 | stat tiles | `{"stats": [{"label", "value", "delta", "good": true\|false\|null, "sub"}]}` |
-| image | `{"image": "/abs/or/relative.png", "height": 160, "fit": "cover"}` — local files are embedded automatically |
+| image | `{"image": "/abs/or/relative.png", "height": 160, "fit": "cover", "alt": "…"}` — local files are embedded (up to 8 MB); a missing one shows its alt text |
 | code / diff | `{"code": "…", "lang": "ts"}`, `{"diff": "@@ …\n+added\n-removed"}` |
 | table | `{"table": {"columns": [...], "rows": [[...]]}}`, `{"kv": {"key": "value"}}` |
 | callout | `{"callout": "markdown", "tone": "ok"\|"warn"\|"bad"}` |
@@ -189,23 +190,21 @@ filterable list — build it into that question, not into the skill:
 
 ## How the user answers
 
-`1`–`9` choose (toggle in multi; presets on a controls question) · arrows / `hjkl` move · `Space` picks
-· `Enter` submits (or next question, or the review) · `Tab` or `/` jumps into the text box, `Esc` leaves
-it, `⌘Enter` sends from it · on a controls question `↓` enters the sliders, `↑`/`↓` move between them,
-`←`/`→` adjust, `r` replays · `[` `]` switch questions · `e` / `E` details · `⌥Enter` Discuss in chat ·
-`?` shows every key · double-click an option to choose and submit · ⌘W dismisses. On the review screen:
-`⏎` sends, `1`–`9` jumps back to that question, `Esc` returns.
+Keys `1`–`9`, arrows, `Space`, `Enter`, `Tab` into the note; the page lists them in its footer and `?`
+shows the rest. ⌘W dismisses. Nothing here needs explaining to the user.
 
 ## Look, size and review
 
-The user's defaults live in `defaults.json` beside this file (style `refined`, a floating panel at 90% of
-the session, review `auto`). Leave them alone unless a question needs otherwise; override per call with a
-flag or per spec with the same key:
+Defaults come from `defaults.json` beside this file, overlaid by the user's own
+`~/.config/huddle/defaults.json` (or `$HUDDLE_CONFIG`) — the user's file is where their preferences live,
+so don't override them unless a question needs it. Per call, a flag or the same key in the spec wins:
 
 - `style`: `refined` (soft cards) · `minimal` (hairline rows) · `bold` (big type, filled choice) ·
   `terminal` (monospace). `--style NAME`.
 - `size`: percent of the session pane as a floating panel, `"auto"` (66–90% by content) or `"full"`.
   `--size N`, `--full`.
+- `status`: `{"asking": [...], "answered": [...]}` — the `agtermctl session status` arguments set while
+  the question is open and after it is answered (default `blocked` / `active`; add `--color`, `--shape`).
 - `review`: the answer list shown before sending — each choice, a thumbnail of a visual one, slider
   values with the live preview, and the user's note. `auto` = when the page has several questions, or a
   note was typed on a choice question · `always` · `never`. `--review MODE`. Question tabs also show the
@@ -219,7 +218,9 @@ flag or per spec with the same key:
   `--no-status` leaves the glyph alone.
 - `--chromeless` hides the overlay's title strip.
 - Outside agterm it serves the page on `127.0.0.1` and opens the default browser; the answer comes back
-  the same way. `--browser` forces that path inside agterm.
+  the same way, and closing the tab counts as dismissed. That path lives only as long as the command:
+  no `--no-wait`, and a timed-out browser question cannot be resumed. `--browser` forces it inside agterm.
+- `AGTERMCTL` points at `agtermctl` when it is not on `PATH`.
 - Mermaid is downloaded once to `~/.cache/huddle/` on first use; offline, diagrams show as source.
 - Generated pages land in `$TMPDIR/huddle/` and are pruned after a day. `$H render spec.json -o out.html`
   builds one without opening it (for checking a spec).
