@@ -1,5 +1,21 @@
 # Changelog
 
+## huddle 1.1.0
+
+### Diagrams are SVG; no download on first use
+
+Mermaid is gone. It was fetched from a CDN the first time a page had a diagram —
+2.7 MB, so the first diagram failed offline — and it was the only thing huddle
+needed from the network. A diagram is now an inline `svg` block the agent writes;
+`SKILL.md` has a copyable pattern, and the `architecture` template and the
+`auth-flow` and `rollout` demos are redrawn as SVG flows, sequence diagrams,
+timelines and branch graphs. A spec that still has a `mermaid` block is refused
+with a message saying to draw it as SVG.
+
+Also: options in a list layout lost a second layer of padding they had by
+mistake, so list questions are shorter; and `SKILL.md` warns that `{id}`
+substitution reaches `${id}` inside a `js` preview.
+
 ## huddle 1.0.0
 
 ### Ask with a page, not a prompt

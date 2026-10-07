@@ -7,15 +7,13 @@
   const KEYS = "123456789";
   const $ = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  // Resolve a theme variable to a concrete rgb() string (mermaid and SVG attributes cannot take var()/color-mix()).
+  // Resolve a theme variable to a concrete rgb() string (SVG attributes cannot take var()/color-mix()).
   let probe;
   const css = (name) => {
     if (!probe) { probe = document.createElement("span"); probe.style.display = "none"; (document.querySelector(".hd") || document.body).appendChild(probe); }
     probe.style.color = ""; probe.style.color = `var(${name})`;
     return getComputedStyle(probe).color;
   };
-  const rgbOf = (c) => (c.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
-  const mix = (a, b, t) => { const x = rgbOf(a), y = rgbOf(b); return "#" + x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, "0")).join(""); };
 
   // ---------- markdown (small, safe subset) ----------
   function inline(s) {
@@ -151,8 +149,6 @@
   }
 
   // ---------- blocks ----------
-  let mermaidN = 0;
-  const pendingMermaid = [];
   const blockJS = [];
   function block(b) {
     if (b == null) return $("div");
@@ -160,10 +156,7 @@
     if (Array.isArray(b)) { const d = $("div", "hd-blocks"); b.forEach((x) => d.appendChild(block(x))); d.style.margin = "0"; return d; }
     let el;
     if (b.md != null) el = $("div", "hd-md", md(b.md));
-    else if (b.mermaid != null) {
-      el = $("div", "hd-mermaid"); el.dataset.src = b.mermaid; el.id = "hd-mm-" + mermaidN++;
-      el.appendChild($("pre", "hd-code", esc(b.mermaid))); pendingMermaid.push(el);
-    } else if (b.chart) el = chart(b.title && !b.chart.title ? Object.assign({}, b.chart, { title: b.title }) : b.chart);
+    else if (b.chart) el = chart(b.title && !b.chart.title ? Object.assign({}, b.chart, { title: b.title }) : b.chart);
     else if (b.stats) {
       el = $("div", "hd-stats");
       b.stats.forEach((s) => {
@@ -215,31 +208,11 @@
   }
   function blocks(list) { const d = $("div", "hd-blocks"); (Array.isArray(list) ? list : [list]).forEach((b) => d.appendChild(block(b))); return d; }
 
-  // block() queues js and mermaid work; flush() runs whatever is queued. A controls preview is rebuilt on
-  // every change, so it flushes after each redraw, not only once at startup.
-  let ready = false, mermaidReady = false, mermaidChain = Promise.resolve();
+  // block() queues js work; flush() runs it. A controls preview is rebuilt on every change, so it flushes
+  // after each redraw, not only once at startup.
+  let ready = false;
   function flush() {
     blockJS.splice(0).forEach(([el, code]) => { try { new Function("el", "api", code)(el, api); } catch (e) { el.appendChild($("pre", "hd-err", "js: " + esc(e.message || e))); } });
-    const els = pendingMermaid.splice(0);
-    if (els.length) mermaidChain = mermaidChain.then(() => renderMermaid(els));
-  }
-  async function renderMermaid(els) {
-    if (!window.mermaid) { els.forEach((el) => el.classList.add("err")); return; }
-    if (!mermaidReady) { mermaidReady = true; initMermaid(); }
-    for (const el of els) {
-      try { const { svg } = await window.mermaid.render(el.id + "-svg", el.dataset.src); el.innerHTML = svg; }
-      catch (e) { el.classList.add("err"); el.appendChild($("div", "hd-err", "mermaid: " + esc(e.message || e))); }
-    }
-  }
-  function initMermaid() {
-    const fg = css("--fg"), bg = getComputedStyle(document.body).backgroundColor, acc = css("--accent");
-    const dark = rgbOf(bg).reduce((a, b) => a + b, 0) < 384, hex = (c) => mix(c, c, 1);
-    try {
-      window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base", fontFamily: "-apple-system, system-ui, sans-serif",
-        themeVariables: { darkMode: dark, background: hex(bg), mainBkg: mix(acc, bg, 0.16), primaryColor: mix(acc, bg, 0.16), primaryBorderColor: mix(acc, bg, 0.75), primaryTextColor: hex(fg), nodeTextColor: hex(fg),
-          lineColor: mix(fg, bg, 0.5), textColor: hex(fg), secondaryColor: mix(css("--ok"), bg, 0.16), tertiaryColor: mix(fg, bg, 0.06), clusterBkg: mix(fg, bg, 0.04), clusterBorder: mix(fg, bg, 0.22),
-          edgeLabelBackground: hex(bg), noteBkgColor: mix(css("--warn"), bg, 0.15), noteTextColor: hex(fg), actorBkg: mix(acc, bg, 0.16), actorBorder: mix(acc, bg, 0.75), actorTextColor: hex(fg), signalColor: hex(fg), signalTextColor: hex(fg), fontSize: "14px" } });
-    } catch (e) { /* initialize is best effort */ }
   }
 
   // ---------- questions ----------

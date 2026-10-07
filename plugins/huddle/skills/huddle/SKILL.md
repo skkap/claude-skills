@@ -1,12 +1,12 @@
 ---
 name: huddle
-description: Ask the user a question as a rich page in an agterm HTML overlay instead of the built-in AskUserQuestion tool. Standard components cover choices (up to 9 options, grey subtitles, Recommended badges with reasons, pros/cons, details), answers that are visuals (diagrams, charts, images, wireframes, colour/radius/spacing/type samples), sliders with a live preview for values that are a matter of taste (radius, gap, colour, speed, size), several questions in one page with a review of the answers, and a free-text box on every question; context as markdown, mermaid, charts, stat tiles, tables, code and diffs; keyboard throughout; extendable with HTML, SVG and JavaScript for anything specific to the question. The agent writes a small JSON spec (or one `huddle q` line) and gets the answer back as JSON. Use whenever you need a decision or input from the user while running inside agterm (AGTERM_ENABLED=1), and whenever the user says huddle, "ask me visually", "show me the options", or asks for a question with diagrams, charts, pictures or sliders.
+description: Ask the user a question as a rich page in an agterm HTML overlay instead of the built-in AskUserQuestion tool. Standard components cover choices (up to 9 options, grey subtitles, Recommended badges with reasons, pros/cons, details), answers that are visuals (diagrams, charts, images, wireframes, colour/radius/spacing/type samples), sliders with a live preview for values that are a matter of taste (radius, gap, colour, speed, size), several questions in one page with a review of the answers, and a free-text box on every question; context as markdown, SVG diagrams, charts, stat tiles, tables, code and diffs; keyboard throughout; extendable with HTML, SVG and JavaScript for anything specific to the question. The agent writes a small JSON spec (or one `huddle q` line) and gets the answer back as JSON. Use whenever you need a decision or input from the user while running inside agterm (AGTERM_ENABLED=1), and whenever the user says huddle, "ask me visually", "show me the options", or asks for a question with diagrams, charts, pictures or sliders.
 ---
 
 # huddle — ask the user with a page, not a prompt
 
 One command opens the question over **your own** agterm session, waits for the answer, and prints it as
-JSON. The runtime (layout, styles, charts, diagrams, sliders, keyboard) is prebuilt; you describe the
+JSON. The runtime (layout, styles, charts, sliders, keyboard) is prebuilt; you describe the
 question.
 
 ```bash
@@ -144,6 +144,9 @@ under it), `badge` (replaces the "Recommended" word), `tags` (small chips: effor
 - `baseline: true` (or a label string) shows the starting values beside the live one ("Now" | "Yours").
 - `options` with `values` are presets: picking one moves the sliders.
 - Each slider has ↺ to return to its starting value.
+- `{id}` is replaced everywhere in the preview, JavaScript included — and `${id}` in a template literal
+  contains `{id}`. In a `js` preview, read each value once into a variable with a different name
+  (`const R = {radius};`) and use that.
 - Optional linking: a `preview` may read earlier answers on the same page — `{@qid}` is the option id
   chosen on question `qid` (comma-joined for multi), `{@qid.label}` its label, `{@qid.ctl}` a slider value
   from another controls question. Use it when the fine-tuning should apply to what was just picked
@@ -158,7 +161,7 @@ Used in `context`, `body`, `detail`, `preview`. A plain string is markdown (`**b
 | Block | Shape |
 | --- | --- |
 | markdown | `"text"` or `{"md": "text"}` |
-| diagram | `{"mermaid": "flowchart LR\n A --> B"}` — any mermaid type (flowchart, sequence, class, state, ER, gantt, gitGraph). In labels avoid `#` (starts an entity: `#1` truncates the line) and `%` (comment marker in gantt); add `todayMarker off` to a gantt |
+| diagram | `{"svg": "<svg …>"}` — see [Diagrams](#diagrams) |
 | chart | `{"chart": {"type": "bar"\|"line"\|"area"\|"hbar"\|"donut"\|"pie", "labels": [...], "series": [{"name", "values", "color"}], "unit": " ms"}}` — `values` alone for one series. Optional: `title`, `highlight` (index or label; not donut/pie), `marks: [{"value", "label"}]` (threshold lines), `min`, `max`, `height`; donut/pie `colors`, `center`, `size`; hbar `labelWidth` |
 | stat tiles | `{"stats": [{"label", "value", "delta", "good": true\|false\|null, "sub"}]}` |
 | image | `{"image": "/abs/or/relative.png", "height": 160, "fit": "cover", "alt": "…"}` — local files are embedded (up to 8 MB); a missing one shows its alt text |
@@ -168,6 +171,29 @@ Used in `context`, `body`, `detail`, `preview`. A plain string is markdown (`**b
 | design samples | `{"radius": 12}`, `{"gap": 16, "items": 4, "direction": "column"}`, `{"colors": ["#hex", {"name", "value"}]}`, `{"type": {"family", "size", "weight", "tracking", "text"}}`, `{"style": {css}, "text": "…"}` |
 | layout | `{"row": [block, block]}` side by side; a list of blocks stacks |
 | svg / html / js | see [Extending](#extending) |
+
+## Diagrams
+
+There is no diagram engine: draw the diagram as an inline `svg` block — boxes, arrows, a timeline, a
+sequence, a branch graph. It needs no network and renders exactly as written. Keep it small and use the
+theme variables in `style=` (SVG attributes cannot read `var()`), so it matches the terminal theme:
+
+```html
+<svg viewBox="0 0 420 90" width="420" style="max-width:100%;height:auto">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="10" y="25" width="110" height="40" rx="7" style="fill:color-mix(in srgb,var(--accent) 14%,var(--bg));stroke:var(--accent)"/>
+  <text x="65" y="50" text-anchor="middle" style="fill:var(--fg);font:13px -apple-system,sans-serif">API</text>
+  <path d="M120,45 L298,45" style="stroke:var(--muted);stroke-width:1.4" marker-end="url(#ar)"/>
+  <text x="210" y="38" text-anchor="middle" style="fill:var(--muted);font:11px -apple-system,sans-serif">enqueue</text>
+  <rect x="300" y="25" width="110" height="40" rx="7" style="fill:color-mix(in srgb,var(--accent) 14%,var(--bg));stroke:var(--accent)"/>
+  <text x="355" y="50" text-anchor="middle" style="fill:var(--fg);font:13px -apple-system,sans-serif">Worker</text>
+</svg>
+```
+
+`templates/architecture.json` (flows), `demos/auth-flow.json` (sequence diagrams) and
+`demos/rollout.json` (timelines, branch graphs) are larger patterns to copy. Inside an option's
+`preview` the card is small: leave edge labels out and let the option's text carry them.
 
 ## Extending
 
@@ -221,7 +247,6 @@ so don't override them unless a question needs it. Per call, a flag or the same 
   the same way, and closing the tab counts as dismissed. That path lives only as long as the command:
   no `--no-wait`, and a timed-out browser question cannot be resumed. `--browser` forces it inside agterm.
 - `AGTERMCTL` points at `agtermctl` when it is not on `PATH`.
-- Mermaid is downloaded once to `~/.cache/huddle/` on first use; offline, diagrams show as source.
 - Generated pages land in `$TMPDIR/huddle/` and are pruned after a day. `$H render spec.json -o out.html`
   builds one without opening it (for checking a spec).
 
