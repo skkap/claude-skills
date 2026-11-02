@@ -13,7 +13,8 @@ session), --timeout SEC (default 570, under the Bash tool's 600 s cap), --browse
 local-browser fallback), --no-status (leave the sidebar glyph alone).
 
 Exit codes: 0 answered or "chat" (user wants to discuss in the terminal), 2 dismissed (closed
-unanswered), 3 no way to show it, 4 still pending after --timeout (run `huddle wait ID`), 1 error.
+unanswered), 3 no way to show it (no agterm and no browser, or the session's overlay slot is taken),
+4 still pending after --timeout (run `huddle wait ID`), 1 error.
 
 Environment: AGTERMCTL (path to agtermctl), HUDDLE_CONFIG (personal defaults, default
 ~/.config/huddle/defaults.json), HUDDLE_NO_BROWSER=1 (outside agterm, exit 3 instead of opening a browser).
@@ -239,7 +240,9 @@ def open_overlay(path, a, spec):
     except json.JSONDecodeError:
         die((r.stderr or r.stdout).strip() or "overlay open failed")
     if not reply.get("ok", True) or r.returncode != 0:
-        die(reply.get("error") or (r.stderr or r.stdout).strip())
+        err = reply.get("error") or (r.stderr or r.stdout).strip()
+        # the slot already holds an overlay, maybe one the user hid (⇧⌘J, agterm 0.38+): nothing can show the page
+        die(err, 3 if "overlay already open" in err or "overlay hidden" in err else 1)
     res = reply.get("result", reply)
     return res.get("pageID") or res.get("id")
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## huddle 1.2.0
+
+### A hidden page is still a question
+
+agterm 0.38 can hide an overlay without closing it (⇧⌘J). A hidden huddle page
+stays open: the wait goes on, the "asking" glyph stays, and ⇧⌘J brings it back.
+`SKILL.md` no longer says the user cannot see the chat while a page is up, only
+that reading it means hiding the question.
+
+A hidden overlay also keeps its slot, so a question asked while the user has one
+hidden (or any overlay open) cannot be shown. That now exits 3, "no way to show
+it", like having no agterm and no browser, so the agent asks with the built-in
+tool instead of reporting an error.
+
 ## huddle 1.1.0
 
 ### Diagrams are SVG; no download on first use

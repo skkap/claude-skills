@@ -52,7 +52,8 @@ jumps back to edit it.
 Keys throughout: `1`–`9` choose, arrows move, `Tab` writes a note, `Enter` sends,
 `⌥Enter` says "let's talk in the terminal instead". The page takes the terminal
 theme's colours. While a question waits, the session's sidebar row shows it is
-asking.
+asking. agterm's ⇧⌘J (0.38 or later) hides the page to look at the terminal and
+brings it back; hiding is not an answer, so the question keeps waiting.
 
 Needs agterm 0.34 or later (pages that answer the script that opened them) and
 Python 3. Outside agterm it opens the page in the browser instead. Personal
