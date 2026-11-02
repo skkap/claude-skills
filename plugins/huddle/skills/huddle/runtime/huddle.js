@@ -296,10 +296,14 @@
             c.onclick = (e) => { e.stopPropagation(); b.classList.toggle("open"); };
             body.appendChild(c);
           }
-          more.addEventListener("click", (e) => e.stopPropagation()); // reading pros/cons is not choosing
         }
         b.appendChild(body);
-        b.addEventListener("click", () => { q.hl = i; choose(q, i); });
+        // The whole card chooses, pros/cons and details included; only controls inside it and a text drag don't.
+        b.addEventListener("click", (e) => {
+          if (e.target.closest("a, button, input, select, textarea, label, [contenteditable]")) return;
+          const s = getSelection(); if (s && !s.isCollapsed && b.contains(s.anchorNode)) return;
+          q.hl = i; choose(q, i);
+        });
         b.addEventListener("dblclick", () => { if (q.mode === "single") { q.sel = new Set([i]); next(); } });
         box.appendChild(b); q.optEls.push(b);
       });
@@ -370,8 +374,10 @@
       if (q.tab) {
         const { sel, txt } = summary(q);
         q.tab.classList.toggle("cur", qi === cur && !reviewing); q.tab.classList.toggle("done", valid(q) && (sel.length || txt));
-        q.tab.querySelector(".a").textContent = q.mode === "tune" ? (sel.length ? sel.join(", ") : tuned(q) ? "custom" : "") + (txt ? " + note" : "")
+        const a = q.mode === "tune" ? (sel.length ? sel.join(", ") : tuned(q) ? "custom" : "") + (txt ? " + note" : "")
           : sel.length ? sel.join(", ") + (txt ? " + note" : "") : txt ? "note" : "";
+        q.tab.querySelector(".a").textContent = a;
+        q.tab.title = (q.spec.header || q.spec.prompt || q.id) + (a ? ": " + a : ""); // a long answer is cut with an ellipsis
       }
     });
     review.classList.toggle("cur", reviewing);
@@ -437,7 +443,10 @@
     return '<div class="hd-rthumbs">' + prevs.map((p) => `<div class="hd-rthumb">${p.outerHTML}</div>`).join("") + "</div>";
   }
   function leaveReview() { reviewing = false; go(qs.length - 1); }
-  function go(i) { reviewing = false; cur = Math.max(0, Math.min(qs.length - 1, i)); if (qs[cur].draw) qs[cur].draw(); refresh(); const q = qs[cur]; if (q.mode === "text" && q.ta) q.ta.focus(); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo({ top: 0 }); }
+  function go(i) {
+    reviewing = false; cur = Math.max(0, Math.min(qs.length - 1, i)); if (qs[cur].draw) qs[cur].draw(); refresh(); const q = qs[cur];
+    if (q.mode === "text" && q.ta) q.ta.focus(); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo({ top: 0 });
+  }
   function next() {
     if (finished) return;
     if (reviewing) return finish();

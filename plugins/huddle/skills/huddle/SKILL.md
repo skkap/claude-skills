@@ -16,6 +16,24 @@ H="${CLAUDE_SKILL_DIR}/scripts/huddle.py"   # the scripts/huddle.py beside this 
 Run it with the Bash tool's `timeout: 600000`. It waits up to 570 s, then exits 4 with the page still open
 (see [Waiting](#waiting)).
 
+## The page covers the chat
+
+The overlay opens over your session's pane. While the page is up, the chat is behind it: the user can only
+read what you wrote there just before calling by hiding the page (⇧⌘J), and then the question is out of sight
+instead. The page has to stand on its own: everything the user needs to answer goes **onto the page**, said
+once and in the place it belongs:
+
+- What you found and why you are asking, shared by every question → top-level `context`. With one question it
+  shows under the prompt; with several it shows above the tabs.
+- Evidence for one question only → that question's `body`. What sets one option apart → the option itself:
+  `subtitle`, `recommended`, `pros`/`cons`, `detail`, `preview`.
+- Use the form that fits the evidence: a flow or structure as an `svg` diagram, numbers as `stats` or a
+  `chart`, a comparison as a `table`, code as `code`/`diff`, and markdown only for what is really prose.
+  A diagram described in a paragraph is a diagram missing.
+- No duplicates. Don't write the findings in chat and then again on the page, and don't repeat the shared
+  `context` inside each question's `body`. Before the call, chat gets one line at most ("Asking where
+  sessions should live"), never the substance.
+
 ## Fastest: one line
 
 ```bash
@@ -92,8 +110,8 @@ Combine them: options to pick a direction, then a `controls` question to fine-tu
   through in the terminal. Stop and ask there; do not pick for them.
 - Exit 2 `status: "dismissed"`: closed unanswered (⌘W). Treat as "not now": don't re-open the same
   question in a loop; say what you need in the terminal.
-- Exit 3: no way to show it (outside agterm with `HUDDLE_NO_BROWSER=1`, or no browser opened) — use
-  AskUserQuestion.
+- Exit 3: no way to show it (outside agterm with `HUDDLE_NO_BROWSER=1`, no browser opened, or the
+  session's overlay slot is taken by another overlay, possibly one the user hid) — use AskUserQuestion.
 
 ## Spec reference
 
@@ -243,6 +261,8 @@ so don't override them unless a question needs it. Per call, a flag or the same 
   "asking" triangle (the same glyph a built-in question gets); it goes back to "working" when answered.
   `--no-status` leaves the glyph alone.
 - `--chromeless` hides the overlay's title strip.
+- A page the user hides with ⇧⌘J (agterm 0.38 or later) is still open: the wait goes on, the "asking"
+  glyph stays, and ⇧⌘J shows it again. Only an answer, ⌘W, or the session closing ends it.
 - Outside agterm it serves the page on `127.0.0.1` and opens the default browser; the answer comes back
   the same way, and closing the tab counts as dismissed. That path lives only as long as the command:
   no `--no-wait`, and a timed-out browser question cannot be resumed. `--browser` forces it inside agterm.
